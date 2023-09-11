@@ -3,16 +3,31 @@ KFSM is Finite State Machinery for Kotlin.
 [<img src="https://img.shields.io/nexus/r/app.cash.kfsm/nostr-sdk.svg?label=latest%20release&server=https%3A%2F%2Foss.sonatype.org"/>](https://central.sonatype.com/namespace/app.cash.kfsm)
 
 
-## Getting Started
-
-On the [Sontaype page for kfsm](https://central.sonatype.com/namespace/app.cash.kfsm), choose the latest version of `kfsm` and follow the instructions for inclusion 
-in your build tool.
-
-## How
+## How to use
 
 See [lib/src/test/kotlin/com/squareup/cash/kfsm/exemplar](https://github.com/cashapp/kfsm/tree/main/lib/src/test/kotlin/com/squareup/cash/kfsm/exemplar) 
 for an example of how to use this library.
 
+In a KFSM state machine, the states are defined as classes that extend `State` and declare the states that can be 
+transitioned to. Transitions are defined as instances of `Transition` and encapsulate the effect of transitioning.
+
+Take this state machine, for example:
+
+```mermaid
+---
+title: Hamster States of Being
+---
+stateDiagram-v2
+    [*] --> Asleep
+    Asleep --> Awake
+    Awake --> Eating
+    Eating --> RunningOnWheel
+    Eating --> Asleep
+    Eating --> Resting
+    RunningOnWheel --> Asleep
+    RunningOnWheel --> Resting
+    Resting --> Asleep
+```
 
 ### The states
 
@@ -29,22 +44,22 @@ sealed class HamsterState(vararg to: HamsterState) : State(to.toSet())
 object Awake : HamsterState(Eating)
 
 /** Hamster is eating ... what will they do next? */
-object Eating : HamsterState(RunningOnWheel, Asleep, OverIt)
+object Eating : HamsterState(RunningOnWheel, Asleep, Resting)
 
 /** Wheeeeeee! */
-object RunningOnWheel : HamsterState(Asleep, OverIt)
+object RunningOnWheel : HamsterState(Asleep, Resting)
 
 /** Sits in the corner, chilling */
-object OverIt : HamsterState(Asleep)
+object Resting : HamsterState(Asleep)
 
 /** Zzzzzzzzz */
-object Asleep : HamsterState()
+object Asleep : HamsterState(Awake)
 ```
 
 #### Test your state machine
 
-The utility `StateMachine.verify` will assert that a defined state machine is valid - i.e. that there's a single
-starting state and no loops.
+The utility `StateMachine.verify` will assert that a defined state machine is valid - i.e. that all states are visited
+from a given starting state.
 
 ```kotlin
 StateMachine.verify(Awake, HamsterState::class).isRight() shouldBe true
