@@ -1,0 +1,52 @@
+public final class com/squareup/cash/kfsm/DefaultStateTransitioner : com/squareup/cash/kfsm/StateTransitioner {
+	public fun <init> (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun transition (Lcom/squareup/cash/kfsm/Transitionable;Lcom/squareup/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class com/squareup/cash/kfsm/InvalidStateTransition : java/lang/Throwable {
+	public fun <init> (Lcom/squareup/cash/kfsm/State;Ljava/util/Set;Lcom/squareup/cash/kfsm/State;)V
+}
+
+public final class com/squareup/cash/kfsm/LockingFailure : java/lang/Throwable {
+	public fun <init> (Lcom/squareup/cash/kfsm/State;Lcom/squareup/cash/kfsm/State;)V
+}
+
+public abstract interface class com/squareup/cash/kfsm/NotificationType {
+}
+
+public class com/squareup/cash/kfsm/State {
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public fun canReach (Lcom/squareup/cash/kfsm/State;)Z
+	public fun canTransitionTo (Lcom/squareup/cash/kfsm/State;)Z
+	public final fun getReachable ()Ljava/util/Set;
+	public final fun getTransitions ()Ljava/util/Set;
+}
+
+public final class com/squareup/cash/kfsm/StateMachine {
+	public static final field INSTANCE Lcom/squareup/cash/kfsm/StateMachine;
+	public final fun verify (Lcom/squareup/cash/kfsm/State;Lkotlin/reflect/KClass;)Larrow/core/Either;
+}
+
+public abstract interface class com/squareup/cash/kfsm/StateTransitioner {
+	public abstract fun transition (Lcom/squareup/cash/kfsm/Transitionable;Lcom/squareup/cash/kfsm/Transition;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract class com/squareup/cash/kfsm/Transition {
+	public fun <init> (Lcom/squareup/cash/kfsm/State;Lcom/squareup/cash/kfsm/State;)V
+	public fun <init> (Ljava/util/Set;Lcom/squareup/cash/kfsm/State;)V
+	public abstract fun effect (Lcom/squareup/cash/kfsm/Transitionable;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public final fun getFrom ()Ljava/util/Set;
+	public final fun getTo ()Lcom/squareup/cash/kfsm/State;
+	public abstract fun makeFailure (Lcom/squareup/cash/kfsm/Transitionable;ZZLjava/lang/Throwable;)Lcom/squareup/cash/kfsm/TransitionFailure;
+	public fun notificationsTypes (Lcom/squareup/cash/kfsm/State;)Ljava/util/Set;
+}
+
+public abstract interface class com/squareup/cash/kfsm/TransitionFailure {
+	public abstract fun getUnderlying ()Larrow/core/Option;
+}
+
+public abstract interface class com/squareup/cash/kfsm/Transitionable {
+	public abstract fun getState ()Lcom/squareup/cash/kfsm/State;
+}
+
