@@ -1,6 +1,6 @@
 KFSM is Finite State Machinery for Kotlin.
 
-[<img src="https://img.shields.io/nexus/r/app.cash.kfsm/nostr-sdk.svg?label=latest%20release&server=https%3A%2F%2Foss.sonatype.org"/>](https://central.sonatype.com/namespace/app.cash.kfsm)
+[<img src="https://img.shields.io/nexus/r/app.cash.kfsm/kfsm.svg?label=latest%20release&server=https%3A%2F%2Foss.sonatype.org"/>](https://central.sonatype.com/namespace/app.cash.kfsm)
 
 
 ## How to use
