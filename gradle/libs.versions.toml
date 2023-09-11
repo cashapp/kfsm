@@ -1,0 +1,44 @@
+[versions]
+arrow = "1.2.1"
+junit = "5.9.3"
+kotest = "5.6.2"
+kotestExtensions = "1.3.3"
+quiver = "0.4.0"
+# @pin
+kotlin = "1.9.0"
+kotlinBinaryCompatibilityPlugin = "0.13.2"
+kotlinCoroutines = "1.7.2"
+kotlinLogging = "3.0.5"
+mavenPublishGradlePlugin = "0.25.3"
+slf4j = "2.0.7"
+versionCatalogUpdateGradlePlugin = "0.8.1"
+versionsGradlePlugin = "0.47.0"
+
+[libraries]
+arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
+junitApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junitEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
+kotestAssertionsArrow = { module = "io.kotest.extensions:kotest-assertions-arrow", version.ref = "kotestExtensions" }
+kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
+kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
+kotlinLoggingJvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinLogging" }
+kotlinxCoroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
+quiver = { module = "app.cash.quiver:lib", version.ref = "quiver" }
+slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
+
+[bundles]
+kotest = [
+    "kotestAssertions",
+    "kotestJunitRunnerJvm",
+    "kotestProperty",
+]
+
+[plugins]
+dokka = "org.jetbrains.dokka:1.8.20"
+gradleDocker = "com.bmuschko.docker-remote-api:9.3.1"
+kotlinBinaryCompatibilityPlugin = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinBinaryCompatibilityPlugin" }
+kotlinGradlePlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+mavenPublishGradlePlugin = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublishGradlePlugin" }
+versionCatalogUpdateGradlePlugin = { id = "nl.littlerobots.version-catalog-update", version.ref = "versionCatalogUpdateGradlePlugin" }
+versionsGradlePlugin = { id = "com.github.ben-manes.versions", version.ref = "versionsGradlePlugin" }
