@@ -1,17 +1,17 @@
 [versions]
 arrow = "1.2.1"
-junit = "5.10.0"
-kotest = "5.7.2"
-kotestExtensions = "1.3.3"
+junit = "5.10.1"
+kotest = "5.8.0"
+kotestExtensions = "1.4.0"
 # @pin
 kotlin = "1.9.0"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 kotlinLogging = "3.0.5"
-mavenPublishGradlePlugin = "0.25.3"
-quiver = "0.4.0"
-slf4j = "2.0.9"
-versionCatalogUpdateGradlePlugin = "0.8.1"
-versionsGradlePlugin = "0.48.0"
+mavenPublishGradlePlugin = "0.27.0"
+quiver = "0.5.0"
+slf4j = "2.0.11"
+versionCatalogUpdateGradlePlugin = "0.8.3"
+versionsGradlePlugin = "0.50.0"
 
 [libraries]
 arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
@@ -33,8 +33,8 @@ kotest = [
 ]
 
 [plugins]
-dokka = "org.jetbrains.dokka:1.9.0"
-gradleDocker = "com.bmuschko.docker-remote-api:9.3.2"
+dokka = "org.jetbrains.dokka:1.9.10"
+gradleDocker = "com.bmuschko.docker-remote-api:9.4.0"
 kotlinBinaryCompatibilityPlugin = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinBinaryCompatibilityPlugin" }
 kotlinGradlePlugin = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 mavenPublishGradlePlugin = { id = "com.vanniktech.maven.publish.base", version.ref = "mavenPublishGradlePlugin" }
