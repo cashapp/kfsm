@@ -38,7 +38,7 @@ object StateMachine {
   /** Check your state machine covers all subtypes */
   fun <S : State> verify(head: S) = verify(head, baseType(head))
 
-  /** Render a state machine as in Mermaid markdown */
+  /** Render a state machine in Mermaid markdown */
   fun <S : State> mermaid(head: S): Either<String, String> = walkTree(head).map { states ->
     listOf("stateDiagram-v2", "[*] --> ${head::class.simpleName}").plus(
       states.flatMap { from ->
