@@ -36,9 +36,17 @@ open class State(transitionsFn: () -> Set<State>) {
 object StateMachine {
 
   /** Check your state machine covers all subtypes */
-  @Suppress("UNCHECKED_CAST") fun <S : State> verify(head: S) = verify(head, head::class.allSuperclasses
-    .find { it.superclasses.contains(State::class) }!! as KClass<out S>
-  )
+  fun <S : State> verify(head: S) = verify(head, baseType(head))
+
+  /** Render a state machine as in Mermaid markdown */
+  fun <S : State> mermaid(head: S): Either<String, String> = walkTree(head).map { states ->
+    listOf("stateDiagram-v2", "[*] --> ${head::class.simpleName}").plus(
+      states.flatMap { from ->
+        from.transitions.map { to -> "${from::class.simpleName} --> ${to::class.simpleName}" }
+      }.toList().sorted()
+    )
+      .joinToString("\n    ")
+  }
 
   private fun <S : State> verify(head: S, type: KClass<out S>) = walkTree(head).flatMap { seen ->
     val notSeen = type.sealedSubclasses.minus(seen.map { it::class }.toSet()).toList().sortedBy { it.simpleName }
@@ -65,4 +73,7 @@ object StateMachine {
         }
       }
     }
+
+  @Suppress("UNCHECKED_CAST") private fun <S : State> baseType(s: S): KClass<out S> = s::class.allSuperclasses
+    .find { it.superclasses.contains(State::class) }!! as KClass<out S>
 }

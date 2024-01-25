@@ -40,7 +40,7 @@ object RunOnWheel : HamsterTransition(from = Eating, to = RunningOnWheel) {
   }
 }
 
-object GoToBed : HamsterTransition(from = setOf(Eating, RunningOnWheel, OverIt), to = Asleep) {
+object GoToBed : HamsterTransition(from = setOf(Eating, RunningOnWheel, Resting), to = Asleep) {
   override suspend fun effect(value: Hamster): Either<HamsterFailure, Hamster> {
     value.sleep()
     return value.right()
@@ -48,12 +48,12 @@ object GoToBed : HamsterTransition(from = setOf(Eating, RunningOnWheel, OverIt),
 
   // I mean if she's over it, then leave her alone
   override fun notificationsTypes(previousState: State): Set<HamsterNotificationType> = when (previousState) {
-    is OverIt -> setOf(Owner)
+    is Resting -> setOf(Owner)
     else -> setOf(TheVoid)
   }
 }
 
-object FlakeOut : HamsterTransition(from = setOf(Eating, RunningOnWheel), to = OverIt) {
+object FlakeOut : HamsterTransition(from = setOf(Eating, RunningOnWheel), to = Resting) {
   override suspend fun effect(value: Hamster): Either<HamsterFailure, Hamster> {
     println("$value has had enough and is sitting cute")
     return value.right()
