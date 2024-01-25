@@ -62,7 +62,7 @@ The utility `StateMachine.verify` will assert that a defined state machine is va
 from a given starting state.
 
 ```kotlin
-StateMachine.verify(Awake, HamsterState::class).isRight() shouldBe true
+StateMachine.verify(Awake).isRight() shouldBe true
 ```
 
 ### The value

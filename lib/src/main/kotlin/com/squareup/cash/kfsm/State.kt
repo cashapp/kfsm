@@ -5,6 +5,9 @@ import arrow.core.flatMap
 import arrow.core.left
 import arrow.core.right
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.superclasses
 
 open class State(transitionsFn: () -> Set<State>) {
 
@@ -33,8 +36,12 @@ open class State(transitionsFn: () -> Set<State>) {
 object StateMachine {
 
   /** Check your state machine covers all subtypes */
-  fun <S : State> verify(head: S, kClass: KClass<S>) = walkTree(head).flatMap { seen ->
-    val notSeen = kClass.sealedSubclasses.minus(seen.map { it::class }.toSet()).toList().sortedBy { it.simpleName }
+  @Suppress("UNCHECKED_CAST") fun <S : State> verify(head: S) = verify(head, head::class.allSuperclasses
+    .find { it.superclasses.contains(State::class) }!! as KClass<out S>
+  )
+
+  private fun <S : State> verify(head: S, type: KClass<out S>) = walkTree(head).flatMap { seen ->
+    val notSeen = type.sealedSubclasses.minus(seen.map { it::class }.toSet()).toList().sortedBy { it.simpleName }
     if (notSeen.isEmpty()) {
       seen.right()
     } else {
