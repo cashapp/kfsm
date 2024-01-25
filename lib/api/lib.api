@@ -25,7 +25,7 @@ public class com/squareup/cash/kfsm/State {
 
 public final class com/squareup/cash/kfsm/StateMachine {
 	public static final field INSTANCE Lcom/squareup/cash/kfsm/StateMachine;
-	public final fun verify (Lcom/squareup/cash/kfsm/State;Lkotlin/reflect/KClass;)Larrow/core/Either;
+	public final fun verify (Lcom/squareup/cash/kfsm/State;)Larrow/core/Either;
 }
 
 public abstract interface class com/squareup/cash/kfsm/StateTransitioner {

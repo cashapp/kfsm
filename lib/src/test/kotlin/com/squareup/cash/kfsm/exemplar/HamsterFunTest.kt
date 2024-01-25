@@ -82,7 +82,7 @@ class HamsterFunTest : StringSpec({
   }
 
   "the state machine is hunky dory" {
-    StateMachine.verify(Awake, HamsterState::class).shouldBeRight()
+    StateMachine.verify(Awake).shouldBeRight()
   }
 
   "if the hamster is over it and goes to bed then the owner should be notified" {
