@@ -11,13 +11,13 @@ sealed class HamsterState(to: () -> Set<HamsterState>) : State(to)
 object Awake : HamsterState({ setOf(Eating) })
 
 /** Hamster is eating ... what will they do next? */
-object Eating : HamsterState({ setOf(RunningOnWheel, Asleep, OverIt) })
+object Eating : HamsterState({ setOf(RunningOnWheel, Asleep, Resting) })
 
 /** Wheeeeeee! */
-object RunningOnWheel : HamsterState({ setOf(Asleep, OverIt) })
+object RunningOnWheel : HamsterState({ setOf(Asleep, Resting) })
 
 /** Sits in the corner, chilling */
-object OverIt : HamsterState({ setOf(Asleep) })
+object Resting : HamsterState({ setOf(Asleep) })
 
 /** Zzzzzzzzz */
 object Asleep : HamsterState({ setOf(Awake) })

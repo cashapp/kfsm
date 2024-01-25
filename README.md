@@ -21,12 +21,12 @@ stateDiagram-v2
     [*] --> Asleep
     Asleep --> Awake
     Awake --> Eating
-    Eating --> RunningOnWheel
     Eating --> Asleep
     Eating --> Resting
+    Eating --> RunningOnWheel
+    Resting --> Asleep
     RunningOnWheel --> Asleep
     RunningOnWheel --> Resting
-    Resting --> Asleep
 ```
 
 ### The states
@@ -62,8 +62,28 @@ The utility `StateMachine.verify` will assert that a defined state machine is va
 from a given starting state.
 
 ```kotlin
-StateMachine.verify(Awake).isRight() shouldBe true
+StateMachine.verify(Awake) shouldBeRight true
 ```
+
+#### Document your state machine
+
+The utility `StateMachine.mermaid` will generate a mermaid diagram of your state machine. This can be rendered in markdown.
+The diagram of HamsterStates above was created using this utility.
+
+```kotlin
+StateMachine.mermaid(Asleep) shouldBeRight """stateDiagram-v2
+    |    [*] --> Asleep
+    |    Asleep --> Awake
+    |    Awake --> Eating
+    |    Eating --> Asleep
+    |    Eating --> Resting
+    |    Eating --> RunningOnWheel
+    |    Resting --> Asleep
+    |    RunningOnWheel --> Asleep
+    |    RunningOnWheel --> Resting
+    """.trimMargin()
+```
+
 
 ### The value
 
