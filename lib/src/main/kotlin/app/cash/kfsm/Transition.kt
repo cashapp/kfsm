@@ -8,7 +8,7 @@ import arrow.core.right
 open class Transition<S : State>(val from: NonEmptySet<S>, val to: S) {
 
   init {
-    from.filterNot { it.canTransitionTo(to) }.let {
+    from.filterNot { it.canDirectlyTransitionTo(to) }.let {
       require(it.isEmpty()) { "invalid transition(s): ${it.map { from -> "$from->$to" }}" }
     }
   }

@@ -4,10 +4,10 @@ public final class app/cash/kfsm/InvalidStateTransition : java/lang/Exception {
 
 public class app/cash/kfsm/State {
 	public fun <init> (Lkotlin/jvm/functions/Function0;)V
-	public fun canReach (Lapp/cash/kfsm/State;)Z
-	public fun canTransitionTo (Lapp/cash/kfsm/State;)Z
-	public final fun getReachable ()Ljava/util/Set;
-	public final fun getTransitions ()Ljava/util/Set;
+	public fun canDirectlyTransitionTo (Lapp/cash/kfsm/State;)Z
+	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/State;)Z
+	public final fun getReachableStates ()Ljava/util/Set;
+	public final fun getSubsequentStates ()Ljava/util/Set;
 }
 
 public class app/cash/kfsm/Transition {
