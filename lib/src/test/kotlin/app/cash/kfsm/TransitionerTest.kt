@@ -157,6 +157,19 @@ class TransitionerTest : StringSpec({
     transitioner.postHookExecuted shouldBe 0
   }
 
+  "returns error when persist throws" {
+    val error = RuntimeException("persist error")
+
+    val transition = transition()
+    val transitioner = transitioner(persist = { throw error })
+
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
+
+    transitioner.preHookExecuted shouldBe 1
+    transition.effected shouldBe 1
+    transitioner.postHookExecuted shouldBe 0
+  }
+
   "can transition multiple times" {
     val aToB = transition(A, B)
     val bToC = transition(B, C)
