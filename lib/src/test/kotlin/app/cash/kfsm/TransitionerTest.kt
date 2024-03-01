@@ -202,5 +202,24 @@ class TransitionerTest : StringSpec({
     transitioner.postHookExecuted shouldBe 7
   }
 
+  "can transition to self" {
+    val aToB = transition(A, B)
+    val bToB = transition(B, B)
+    val bToC = transition(B, C)
+    val transitioner = transitioner()
+
+    transitioner.transition(Letter(A), aToB)
+      .flatMap { transitioner.transition(it, bToB) }
+      .flatMap { transitioner.transition(it, bToB) }
+      .flatMap { transitioner.transition(it, bToB) }
+      .flatMap { transitioner.transition(it, bToC) } shouldBeRight Letter(C)
+
+    transitioner.preHookExecuted shouldBe 5
+    aToB.effected shouldBe 1
+    bToB.effected shouldBe 3
+    bToC.effected shouldBe 1
+    transitioner.postHookExecuted shouldBe 5
+  }
+
 })
 
