@@ -1,3 +1,37 @@
+public final class app/cash/kfsm/InvalidStateTransition : java/lang/Exception {
+	public fun <init> (Lapp/cash/kfsm/Transition;Lapp/cash/kfsm/Value;)V
+}
+
+public class app/cash/kfsm/State {
+	public fun <init> (Lkotlin/jvm/functions/Function0;)V
+	public fun canDirectlyTransitionTo (Lapp/cash/kfsm/State;)Z
+	public fun canEventuallyTransitionTo (Lapp/cash/kfsm/State;)Z
+	public final fun getReachableStates ()Ljava/util/Set;
+	public final fun getSubsequentStates ()Ljava/util/Set;
+}
+
+public class app/cash/kfsm/Transition {
+	public fun <init> (Lapp/cash/kfsm/State;Lapp/cash/kfsm/State;)V
+	public synthetic fun <init> (Ljava/util/Set;Lapp/cash/kfsm/State;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun effect (Lapp/cash/kfsm/Value;)Larrow/core/Either;
+	public final fun getFrom-5sCjGKo ()Ljava/util/Set;
+	public final fun getTo ()Lapp/cash/kfsm/State;
+}
+
+public class app/cash/kfsm/Transitioner {
+	public fun <init> ()V
+	public fun <init> (Lkotlin/jvm/functions/Function1;)V
+	public synthetic fun <init> (Lkotlin/jvm/functions/Function1;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun postHook (Lapp/cash/kfsm/Value;)Larrow/core/Either;
+	public fun preHook (Lapp/cash/kfsm/Value;)Larrow/core/Either;
+	public final fun transition (Lapp/cash/kfsm/Value;Lapp/cash/kfsm/Transition;)Larrow/core/Either;
+}
+
+public abstract interface class app/cash/kfsm/Value {
+	public abstract fun getState ()Lapp/cash/kfsm/State;
+	public abstract fun update (Lapp/cash/kfsm/State;)Lapp/cash/kfsm/Value;
+}
+
 public final class com/squareup/cash/kfsm/DefaultStateTransitioner : com/squareup/cash/kfsm/StateTransitioner {
 	public fun <init> (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function3;Lkotlin/jvm/functions/Function4;Lkotlin/jvm/functions/Function2;Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
