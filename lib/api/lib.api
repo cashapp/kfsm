@@ -12,9 +12,9 @@ public class app/cash/kfsm/State {
 
 public class app/cash/kfsm/Transition {
 	public fun <init> (Lapp/cash/kfsm/State;Lapp/cash/kfsm/State;)V
-	public fun <init> (Ljava/util/Set;Lapp/cash/kfsm/State;)V
+	public synthetic fun <init> (Ljava/util/Set;Lapp/cash/kfsm/State;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun effect (Lapp/cash/kfsm/Value;)Larrow/core/Either;
-	public final fun getFrom ()Ljava/util/Set;
+	public final fun getFrom-5sCjGKo ()Ljava/util/Set;
 	public final fun getTo ()Lapp/cash/kfsm/State;
 }
 
