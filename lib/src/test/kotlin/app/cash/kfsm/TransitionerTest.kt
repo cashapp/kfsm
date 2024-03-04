@@ -13,20 +13,20 @@ import io.kotest.matchers.throwable.shouldHaveMessage
 class TransitionerTest : StringSpec({
 
   fun transitioner(
-    pre: (Value<LetterState>) -> ErrorOr<Unit> = { Unit.right() },
-    post: (Value<LetterState>) -> ErrorOr<Unit> = { Unit.right() },
-    persist: (Value<LetterState>) -> ErrorOr<Value<LetterState>> = { it.right() },
-  ) = object : Transitioner<LetterState>(persist) {
+    pre: (Letter) -> ErrorOr<Unit> = { Unit.right() },
+    post: (Letter) -> ErrorOr<Unit> = { Unit.right() },
+    persist: (Letter) -> ErrorOr<Letter> = { it.right() },
+  ) = object : Transitioner<Letter, Char>(persist) {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
-    override fun preHook(value: Value<LetterState>): ErrorOr<Unit> = pre(value).also { preHookExecuted += 1 }
-    override fun postHook(value: Value<LetterState>): ErrorOr<Unit> = post(value).also { postHookExecuted += 1 }
+    override fun preHook(value: Letter): ErrorOr<Unit> = pre(value).also { preHookExecuted += 1 }
+    override fun postHook(value: Letter): ErrorOr<Unit> = post(value).also { postHookExecuted += 1 }
   }
 
-  fun transition(from: LetterState = A, to: LetterState = B) = object : Transition<LetterState>(from, to) {
+  fun transition(from: Char = A, to: Char = B) = object : LetterTransition(from, to) {
     var effected = 0
-    override fun effect(value: Value<LetterState>): ErrorOr<Value<LetterState>> {
+    override fun effect(value: Letter): ErrorOr<Letter> {
       effected += 1
       return value.update(to).right()
     }
@@ -82,8 +82,8 @@ class TransitionerTest : StringSpec({
   "returns error when effect errors" {
     val error = RuntimeException("effect error")
 
-    val transition = object : Transition<LetterState>(A, B) {
-      override fun effect(value: Value<LetterState>): ErrorOr<Value<LetterState>> = error.left()
+    val transition = object : LetterTransition(A, B) {
+      override fun effect(value: Letter): ErrorOr<Letter> = error.left()
     }
     val transitioner = transitioner()
 
@@ -121,8 +121,8 @@ class TransitionerTest : StringSpec({
   "returns error when effect throws" {
     val error = RuntimeException("effect error")
 
-    val transition = object : Transition<LetterState>(A, B) {
-      override fun effect(value: Value<LetterState>): ErrorOr<Value<LetterState>> = throw error
+    val transition = object : LetterTransition(A, B) {
+      override fun effect(value: Letter): ErrorOr<Letter> = throw error
     }
     val transitioner = transitioner()
 
@@ -233,6 +233,5 @@ class TransitionerTest : StringSpec({
     bToC.effected shouldBe 1
     transitioner.postHookExecuted shouldBe 5
   }
-
 })
 

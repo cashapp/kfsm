@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-interface Value<S : State> {
+interface Value<V: Value<V, S>, S : State> {
   val state: S
-  fun update(newState: S): Value<S>
+  fun update(newState: S): V
 }

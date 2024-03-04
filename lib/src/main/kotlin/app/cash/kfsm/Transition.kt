@@ -5,7 +5,7 @@ import arrow.core.NonEmptySet
 import arrow.core.nonEmptySetOf
 import arrow.core.right
 
-open class Transition<S : State>(val from: NonEmptySet<S>, val to: S) {
+open class Transition<V: Value<V, S>, S : State>(val from: NonEmptySet<S>, val to: S) {
 
   init {
     from.filterNot { it.canDirectlyTransitionTo(to) }.let {
@@ -15,5 +15,5 @@ open class Transition<S : State>(val from: NonEmptySet<S>, val to: S) {
 
   constructor(from: S, to: S) : this(nonEmptySetOf(from), to)
 
-  open fun effect(value: Value<S>): ErrorOr<Value<S>> = value.right()
+  open fun effect(value: V): ErrorOr<V> = value.right()
 }
