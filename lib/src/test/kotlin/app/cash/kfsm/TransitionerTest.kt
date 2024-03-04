@@ -13,20 +13,23 @@ import io.kotest.matchers.throwable.shouldHaveMessage
 class TransitionerTest : StringSpec({
 
   fun transitioner(
-    pre: (Letter) -> ErrorOr<Unit> = { Unit.right() },
-    post: (Letter) -> ErrorOr<Unit> = { Unit.right() },
+    pre: (Letter, LetterTransition) -> ErrorOr<Unit> = { _, _ -> Unit.right() },
+    post: (Char, Letter, LetterTransition) -> ErrorOr<Unit> = { _, _, _ -> Unit.right() },
     persist: (Letter) -> ErrorOr<Letter> = { it.right() },
   ) = object : Transitioner<Letter, Char>(persist) {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
-    override fun preHook(value: Letter): ErrorOr<Unit> = pre(value).also { preHookExecuted += 1 }
-    override fun postHook(value: Letter): ErrorOr<Unit> = post(value).also { postHookExecuted += 1 }
+    override suspend fun preHook(value: Letter, via: LetterTransition): ErrorOr<Unit> =
+      pre(value, via).also { preHookExecuted += 1 }
+
+    override suspend fun postHook(from: Char, value: Letter, via: LetterTransition): ErrorOr<Unit> =
+      post(from, value, via).also { postHookExecuted += 1 }
   }
 
   fun transition(from: Char = A, to: Char = B) = object : LetterTransition(from, to) {
     var effected = 0
-    override fun effect(value: Letter): ErrorOr<Letter> {
+    override suspend fun effect(value: Letter): ErrorOr<Letter> {
       effected += 1
       return value.update(to).right()
     }
@@ -70,7 +73,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("preHook error")
 
     val transition = transition()
-    val transitioner = transitioner(pre = { error.left() })
+    val transitioner = transitioner(pre = { _, _ -> error.left() })
 
     transitioner.transition(Letter(A), transition) shouldBeLeft error
 
@@ -83,7 +86,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("effect error")
 
     val transition = object : LetterTransition(A, B) {
-      override fun effect(value: Letter): ErrorOr<Letter> = error.left()
+      override suspend fun effect(value: Letter): ErrorOr<Letter> = error.left()
     }
     val transitioner = transitioner()
 
@@ -97,7 +100,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("postHook error")
 
     val transition = transition()
-    val transitioner = transitioner(post = { error.left() })
+    val transitioner = transitioner(post = { _, _, _ -> error.left() })
 
     transitioner.transition(Letter(A), transition) shouldBeLeft error
 
@@ -110,7 +113,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("preHook error")
 
     val transition = transition()
-    val transitioner = transitioner(pre = { throw error })
+    val transitioner = transitioner(pre = { _, _ -> throw error })
 
     transitioner.transition(Letter(A), transition) shouldBeLeft error
 
@@ -122,7 +125,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("effect error")
 
     val transition = object : LetterTransition(A, B) {
-      override fun effect(value: Letter): ErrorOr<Letter> = throw error
+      override suspend fun effect(value: Letter): ErrorOr<Letter> = throw error
     }
     val transitioner = transitioner()
 
@@ -136,7 +139,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("postHook error")
 
     val transition = transition()
-    val transitioner = transitioner(post = { throw error })
+    val transitioner = transitioner(post = { _, _, _ -> throw error })
 
     transitioner.transition(Letter(A), transition) shouldBeLeft error
 
@@ -232,6 +235,33 @@ class TransitionerTest : StringSpec({
     bToB.effected shouldBe 3
     bToC.effected shouldBe 1
     transitioner.postHookExecuted shouldBe 5
+  }
+
+  "pre hook contains the correct from value and transition" {
+    val transition = transition()
+    val transitioner = transitioner(
+      pre = { value, t ->
+        value shouldBe Letter(A)
+        t shouldBe transition
+        Unit.right()
+      }
+    )
+
+    transitioner.transition(Letter(A), transition).shouldBeRight()
+  }
+
+  "post hook contains the correct from state, post value and transition" {
+    val transition = transition()
+    val transitioner = transitioner(
+      post = { from, value, t->
+        from shouldBe A
+        value shouldBe Letter(B)
+        t shouldBe transition
+        Unit.right()
+      }
+    )
+
+    transitioner.transition(Letter(A), transition).shouldBeRight()
   }
 })
 
