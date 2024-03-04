@@ -10,14 +10,14 @@ import arrow.core.raise.either
 import arrow.core.right
 
 open class Transitioner<V: Value<V, S>, S : State>(
-  private val persist: (V) -> ErrorOr<V> = { it.right() }
+  private val persist: suspend (V) -> ErrorOr<V> = { it.right() }
 ) {
 
-  open fun preHook(value: V): ErrorOr<Unit> = Unit.right()
+  open suspend fun preHook(value: V, via: Transition<V, S>): ErrorOr<Unit> = Unit.right()
 
-  open fun postHook(value: V): ErrorOr<Unit> = Unit.right()
+  open suspend fun postHook(from: S, value: V, via: Transition<V, S>): ErrorOr<Unit> = Unit.right()
 
-  fun transition(
+  suspend fun transition(
     value: V,
     transition: Transition<V, S>
   ): ErrorOr<V> = when {
@@ -28,15 +28,15 @@ open class Transitioner<V: Value<V, S>, S : State>(
     else -> InvalidStateTransition(transition, value).left()
   }
 
-  private fun doTheTransition(
+  private suspend fun doTheTransition(
     value: V,
     transition: Transition<V, S>
   ) = Either.catch {
-    preHook(value)
+    preHook(value, transition)
       .flatMap{ transition.effect(value) }
       .map { it.update(transition.to) }
       .flatMap { persist(it) }
-      .flatTap { postHook(it) }
+      .flatTap { postHook(value.state, it, transition) }
   }.flatten()
 
   private fun ignoreAlreadyCompletedTransition(

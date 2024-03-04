@@ -15,5 +15,5 @@ open class Transition<V: Value<V, S>, S : State>(val from: NonEmptySet<S>, val t
 
   constructor(from: S, to: S) : this(nonEmptySetOf(from), to)
 
-  open fun effect(value: V): ErrorOr<V> = value.right()
+  open suspend fun effect(value: V): ErrorOr<V> = value.right()
 }
