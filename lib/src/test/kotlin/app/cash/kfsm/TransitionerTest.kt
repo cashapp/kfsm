@@ -16,7 +16,7 @@ class TransitionerTest : StringSpec({
     pre: (Letter, LetterTransition) -> ErrorOr<Unit> = { _, _ -> Unit.right() },
     post: (Char, Letter, LetterTransition) -> ErrorOr<Unit> = { _, _, _ -> Unit.right() },
     persist: (Letter) -> ErrorOr<Letter> = { it.right() },
-  ) = object : Transitioner<Letter, Char>(persist) {
+  ) = object : Transitioner<LetterTransition, Letter, Char>(persist) {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
@@ -243,6 +243,7 @@ class TransitionerTest : StringSpec({
       pre = { value, t ->
         value shouldBe Letter(A)
         t shouldBe transition
+        t.specificToThisTransitionType shouldBe "NonEmptySet(A) -> B"
         Unit.right()
       }
     )
@@ -251,17 +252,18 @@ class TransitionerTest : StringSpec({
   }
 
   "post hook contains the correct from state, post value and transition" {
-    val transition = transition()
+    val transition = transition(from = B, to = C)
     val transitioner = transitioner(
       post = { from, value, t->
-        from shouldBe A
-        value shouldBe Letter(B)
+        from shouldBe B
+        value shouldBe Letter(C)
         t shouldBe transition
+        t.specificToThisTransitionType shouldBe "NonEmptySet(B) -> C"
         Unit.right()
       }
     )
 
-    transitioner.transition(Letter(A), transition).shouldBeRight()
+    transitioner.transition(Letter(B), transition).shouldBeRight()
   }
 })
 

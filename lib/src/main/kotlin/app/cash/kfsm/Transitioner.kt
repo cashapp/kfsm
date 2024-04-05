@@ -9,17 +9,17 @@ import arrow.core.left
 import arrow.core.raise.either
 import arrow.core.right
 
-open class Transitioner<V: Value<V, S>, S : State>(
+open class Transitioner<T : Transition<V, S>, V: Value<V, S>, S : State>(
   private val persist: suspend (V) -> ErrorOr<V> = { it.right() }
 ) {
 
-  open suspend fun preHook(value: V, via: Transition<V, S>): ErrorOr<Unit> = Unit.right()
+  open suspend fun preHook(value: V, via: T): ErrorOr<Unit> = Unit.right()
 
-  open suspend fun postHook(from: S, value: V, via: Transition<V, S>): ErrorOr<Unit> = Unit.right()
+  open suspend fun postHook(from: S, value: V, via: T): ErrorOr<Unit> = Unit.right()
 
   suspend fun transition(
     value: V,
-    transition: Transition<V, S>
+    transition: T
   ): ErrorOr<V> = when {
     transition.from.contains(value.state) -> doTheTransition(value, transition)
     // Self-cycled transitions will be effected by the first case.
@@ -30,7 +30,7 @@ open class Transitioner<V: Value<V, S>, S : State>(
 
   private suspend fun doTheTransition(
     value: V,
-    transition: Transition<V, S>
+    transition: T
   ) = Either.catch {
     preHook(value, transition)
       .flatMap{ transition.effect(value) }
@@ -41,7 +41,7 @@ open class Transitioner<V: Value<V, S>, S : State>(
 
   private fun ignoreAlreadyCompletedTransition(
     value: V,
-    transition: Transition<V, S>
+    transition: T
   ): ErrorOr<V> = value.update(transition.to).right()
 }
 
