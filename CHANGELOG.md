@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* Refined type aliases on Transitioner so that implementations are free to define a base transition type that may
+  implement common functionality. For example, a new base transition type can define a common way to execute
+  side-effects that occur in pre and post hook transitioner functions. See TransitionerTest use of 
+  `specificToThisTransitionType` for an example.
+
 ## [0.1.0]
 
 ### Breaking
