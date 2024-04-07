@@ -13,11 +13,13 @@ import arrow.core.flatMap
 import arrow.core.right
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 
 class PenelopePerfectDayTest : StringSpec({
+  isolationMode = IsolationMode.InstancePerTest
 
   val hamster = Hamster(name = "Penelope", state = Awake)
 
@@ -43,17 +45,15 @@ class PenelopePerfectDayTest : StringSpec({
     // Any action you might wish to take after transitioning successfully, such as sending events or notifications
     override suspend fun postHook(from: State, value: Hamster, via: HamsterTransition): ErrorOr<Unit> = Either.catch {
       notifications.add("${value.name} was $from, then began ${via.description} and is now ${via.to}")
+      unlocks.add(value)
     }
-  }
-
-  beforeTest {
-    setOf(locks, unlocks, saves, notifications).forEach { it.clear() }
   }
 
   "a newly woken hamster eats broccoli" {
     val result = transitioner.transition(hamster, EatBreakfast("broccoli")).shouldBeRight()
     result.state shouldBe Eating
     locks shouldBe listOf(hamster)
+    unlocks shouldBe listOf(result)
     saves shouldBe listOf(result)
     notifications shouldBe listOf("Penelope was Awake, then began eating broccoli for breakfast and is now Eating")
   }
@@ -62,6 +62,7 @@ class PenelopePerfectDayTest : StringSpec({
     transitioner.transition(hamster, EatBreakfast("cheese")) shouldBeLeft
       LactoseIntoleranceTroubles("cheese")
     locks shouldBe listOf(hamster)
+    unlocks.shouldBeEmpty()
     saves.shouldBeEmpty()
     notifications.shouldBeEmpty()
   }
@@ -80,6 +81,7 @@ class PenelopePerfectDayTest : StringSpec({
       hamster.copy(state = Asleep),
       hamster.copy(state = Awake),
     )
+    unlocks shouldBe saves
     saves shouldBe listOf(
       hamster.copy(state = Eating),
       hamster.copy(state = RunningOnWheel),
@@ -99,6 +101,7 @@ class PenelopePerfectDayTest : StringSpec({
   "a sleeping hamster cannot immediately start running on the wheel" {
     transitioner.transition(hamster.copy(state = Asleep), RunOnWheel).shouldBeLeft()
     locks.shouldBeEmpty()
+    unlocks.shouldBeEmpty()
     saves.shouldBeEmpty()
     notifications.shouldBeEmpty()
   }
@@ -108,6 +111,7 @@ class PenelopePerfectDayTest : StringSpec({
     transitioner.transition(eatingHamster, EatBreakfast("broccoli"))
       .shouldBeRight(eatingHamster)
     locks.shouldBeEmpty()
+    unlocks.shouldBeEmpty()
     saves.shouldBeEmpty()
     notifications.shouldBeEmpty()
   }
