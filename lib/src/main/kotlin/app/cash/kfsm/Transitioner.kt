@@ -9,7 +9,7 @@ import arrow.core.left
 import arrow.core.raise.either
 import arrow.core.right
 
-open class Transitioner<T : Transition<V, S>, V: Value<V, S>, S : State>(
+abstract class Transitioner<T : Transition<V, S>, V: Value<V, S>, S : State>(
   private val persist: suspend (V) -> ErrorOr<V> = { it.right() }
 ) {
 
