@@ -24,7 +24,7 @@ public class app/cash/kfsm/Transition {
 	public final fun getTo ()Lapp/cash/kfsm/State;
 }
 
-public class app/cash/kfsm/Transitioner {
+public abstract class app/cash/kfsm/Transitioner {
 	public fun <init> ()V
 	public fun <init> (Lkotlin/jvm/functions/Function2;)V
 	public synthetic fun <init> (Lkotlin/jvm/functions/Function2;ILkotlin/jvm/internal/DefaultConstructorMarker;)V

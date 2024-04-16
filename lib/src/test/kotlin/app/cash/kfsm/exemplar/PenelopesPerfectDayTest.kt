@@ -6,11 +6,7 @@ import app.cash.kfsm.exemplar.Hamster.Asleep
 import app.cash.kfsm.exemplar.Hamster.Awake
 import app.cash.kfsm.exemplar.Hamster.Eating
 import app.cash.kfsm.exemplar.Hamster.RunningOnWheel
-import app.cash.kfsm.exemplar.Hamster.State
-import app.cash.quiver.extensions.ErrorOr
-import arrow.core.Either
 import arrow.core.flatMap
-import arrow.core.right
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.IsolationMode
@@ -18,53 +14,31 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 
-class PenelopePerfectDayTest : StringSpec({
+class PenelopesPerfectDayTest : StringSpec({
   isolationMode = IsolationMode.InstancePerTest
 
   val hamster = Hamster(name = "Penelope", state = Awake)
 
-  val saves = mutableListOf<Hamster>()
-  val locks = mutableListOf<Hamster>()
-  val unlocks = mutableListOf<Hamster>()
-  val notifications = mutableListOf<String>()
-
-  // If you do not require pre and post hooks, you can simply instantiate a transitioner & provide the persistence
-  // function as a constructor argument.
-  // In this example, we extend the transitioner in order to define hooks that will be executed before each transition
-  // and after each successful transition.
-  val transitioner = object : Transitioner<HamsterTransition, Hamster, State>(
-    // This is where you define how to save your updated value to a data store
-    persist = { it.also(saves::add).right() }
-  ) {
-
-    // Any action you might wish to take prior to transitioning, such as pessimistic locking
-    override suspend fun preHook(value: Hamster, via: HamsterTransition): ErrorOr<Unit> = Either.catch {
-      locks.add(value)
-    }
-
-    // Any action you might wish to take after transitioning successfully, such as sending events or notifications
-    override suspend fun postHook(from: State, value: Hamster, via: HamsterTransition): ErrorOr<Unit> = Either.catch {
-      notifications.add("${value.name} was $from, then began ${via.description} and is now ${via.to}")
-      unlocks.add(value)
-    }
-  }
+  // In this example we extend the transitioner with our own type `HamsterTransitioner` in order to define
+  // hooks that will be executed before each transition and after each successful transition.
+  val transitioner = HamsterTransitioner()
 
   "a newly woken hamster eats broccoli" {
     val result = transitioner.transition(hamster, EatBreakfast("broccoli")).shouldBeRight()
     result.state shouldBe Eating
-    locks shouldBe listOf(hamster)
-    unlocks shouldBe listOf(result)
-    saves shouldBe listOf(result)
-    notifications shouldBe listOf("Penelope was Awake, then began eating broccoli for breakfast and is now Eating")
+    transitioner.locks shouldBe listOf(hamster)
+    transitioner.unlocks shouldBe listOf(result)
+    transitioner.saves shouldBe listOf(result)
+    transitioner.notifications shouldBe listOf("Penelope was Awake, then began eating broccoli for breakfast and is now Eating")
   }
 
   "the hamster has trouble eating cheese" {
     transitioner.transition(hamster, EatBreakfast("cheese")) shouldBeLeft
       LactoseIntoleranceTroubles("cheese")
-    locks shouldBe listOf(hamster)
-    unlocks.shouldBeEmpty()
-    saves.shouldBeEmpty()
-    notifications.shouldBeEmpty()
+    transitioner.locks shouldBe listOf(hamster)
+    transitioner.unlocks.shouldBeEmpty()
+    transitioner.saves.shouldBeEmpty()
+    transitioner.notifications.shouldBeEmpty()
   }
 
   "a sleeping hamster can awaken yet again" {
@@ -74,22 +48,22 @@ class PenelopePerfectDayTest : StringSpec({
       .flatMap { transitioner.transition(it, WakeUp) }
       .flatMap { transitioner.transition(it, EatBreakfast("broccoli")) }
       .shouldBeRight().state shouldBe Eating
-    locks shouldBe listOf(
+    transitioner.locks shouldBe listOf(
       hamster,
       hamster.copy(state = Eating),
       hamster.copy(state = RunningOnWheel),
       hamster.copy(state = Asleep),
       hamster.copy(state = Awake),
     )
-    unlocks shouldBe saves
-    saves shouldBe listOf(
+    transitioner.unlocks shouldBe transitioner.saves
+    transitioner.saves shouldBe listOf(
       hamster.copy(state = Eating),
       hamster.copy(state = RunningOnWheel),
       hamster.copy(state = Asleep),
       hamster.copy(state = Awake),
       hamster.copy(state = Eating),
     )
-    notifications shouldBe listOf(
+    transitioner.notifications shouldBe listOf(
       "Penelope was Awake, then began eating broccoli for breakfast and is now Eating",
       "Penelope was Eating, then began running on the wheel and is now RunningOnWheel",
       "Penelope was RunningOnWheel, then began going to bed and is now Asleep",
@@ -100,20 +74,20 @@ class PenelopePerfectDayTest : StringSpec({
 
   "a sleeping hamster cannot immediately start running on the wheel" {
     transitioner.transition(hamster.copy(state = Asleep), RunOnWheel).shouldBeLeft()
-    locks.shouldBeEmpty()
-    unlocks.shouldBeEmpty()
-    saves.shouldBeEmpty()
-    notifications.shouldBeEmpty()
+    transitioner.locks.shouldBeEmpty()
+    transitioner.unlocks.shouldBeEmpty()
+    transitioner.saves.shouldBeEmpty()
+    transitioner.notifications.shouldBeEmpty()
   }
 
   "an eating hamster who wants to eat twice as hard will just keep eating" {
     val eatingHamster = hamster.copy(state = Eating)
     transitioner.transition(eatingHamster, EatBreakfast("broccoli"))
       .shouldBeRight(eatingHamster)
-    locks.shouldBeEmpty()
-    unlocks.shouldBeEmpty()
-    saves.shouldBeEmpty()
-    notifications.shouldBeEmpty()
+    transitioner.locks.shouldBeEmpty()
+    transitioner.unlocks.shouldBeEmpty()
+    transitioner.saves.shouldBeEmpty()
+    transitioner.notifications.shouldBeEmpty()
   }
 
   // Add a test like this to ensure you don't have states that cannot be reached

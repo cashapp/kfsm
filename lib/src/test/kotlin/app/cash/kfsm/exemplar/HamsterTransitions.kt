@@ -17,6 +17,7 @@ abstract class HamsterTransition(
   from: NonEmptySet<Hamster.State>,
   to: Hamster.State
 ) : Transition<Hamster, Hamster.State>(from, to) {
+  // Convenience constructor for when the from set has only one value
   constructor(from: Hamster.State, to: Hamster.State) : this(nonEmptySetOf(from), to)
 
   // Demonstrates how you can add base behaviour to transitions for use in pre and post hooks.
