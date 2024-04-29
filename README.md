@@ -75,7 +75,7 @@ persist values.
 ```kotlin
 class LightTransitioner(
     private val database: Database
-) : Transitioner<LightTransitioner, Light, Color>(
+) : Transitioner<ColorChange, Light, Color>(
     persist = { it.also(database::update).right() }
 )
 ```
