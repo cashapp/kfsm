@@ -33,6 +33,11 @@ data object Amber : Color({ setOf(Red) })
 data object Red : Color({ setOf(Green) })
 ```
 
+<aside>
+Be sure to define your state constructor with functions rather than literal values if you require cycles in your state
+machine. Otherwise, you are likely to encounter null pointer exceptions.
+</aside>
+
 ### Value
 
 The value is responsible for knowing and updating its current state.
