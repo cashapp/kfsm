@@ -193,7 +193,7 @@ class TransitionerTest : StringSpec({
     transitioner.postHookExecuted shouldBe 4
   }
 
-  "can transition in a loop" {
+  "can transition in a 3+ party loop" {
     val aToB = transition(A, B)
     val bToC = transition(B, C)
     val cToD = transition(C, D)
@@ -216,6 +216,27 @@ class TransitionerTest : StringSpec({
     dToB.effected shouldBe 1
     dToE.effected shouldBe 1
     transitioner.postHookExecuted shouldBe 7
+  }
+
+  "can transition in a 2-party loop" {
+    val aToB = transition(A, B)
+    val bToD = transition(B, D)
+    val dToB = transition(D, B)
+    val dToE = transition(D, E)
+    val transitioner = transitioner()
+
+    transitioner.transition(Letter(A), aToB)
+      .flatMap { transitioner.transition(it, bToD) }
+      .flatMap { transitioner.transition(it, dToB) }
+      .flatMap { transitioner.transition(it, bToD) }
+      .flatMap { transitioner.transition(it, dToE) } shouldBeRight Letter(E)
+
+    transitioner.preHookExecuted shouldBe 5
+    aToB.effected shouldBe 1
+    bToD.effected shouldBe 2
+    dToB.effected shouldBe 1
+    dToE.effected shouldBe 1
+    transitioner.postHookExecuted shouldBe 5
   }
 
   "can transition to self" {
