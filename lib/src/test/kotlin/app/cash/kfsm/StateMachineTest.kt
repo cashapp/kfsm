@@ -16,12 +16,20 @@ class StateMachineTest : StringSpec({
     )
   }
 
-  "Returns failure when not all states are encountered" {
-    StateMachine.verify(Valid3) shouldBeLeft "Did not encounter [Valid1, Valid2]"
+  "Can verify machines with self-loops" {
+    StateMachine.verify(UniCycle1).shouldBeRight()
   }
 
-  "Does not return failure when there is a cycle in the state machine" {
-    StateMachine.verify(Cycle1).shouldBeRight()
+  "Can verify machines with 2 party loops" {
+    StateMachine.verify(BiCycle1).shouldBeRight()
+  }
+
+  "Can verify machines with 3+ party loops" {
+    StateMachine.verify(TriCycle1).shouldBeRight()
+  }
+
+  "Returns failure when not all states are encountered" {
+    StateMachine.verify(Valid3) shouldBeLeft "Did not encounter [Valid1, Valid2]"
   }
 
   "produces mermaid diagram source for non-cyclical state machine" {
@@ -37,12 +45,12 @@ class StateMachineTest : StringSpec({
   }
 
   "produces mermaid diagram source for cyclical state machine" {
-    StateMachine.mermaid(Cycle3) shouldBeRight """
+    StateMachine.mermaid(TriCycle3) shouldBeRight """
       |stateDiagram-v2
-      |    [*] --> Cycle3
-      |    Cycle1 --> Cycle2
-      |    Cycle2 --> Cycle3
-      |    Cycle3 --> Cycle1
+      |    [*] --> TriCycle3
+      |    TriCycle1 --> TriCycle2
+      |    TriCycle2 --> TriCycle3
+      |    TriCycle3 --> TriCycle1
     """.trimMargin()
   }
 })
@@ -54,8 +62,14 @@ data object Valid3 : ValidState({ setOf(Valid4, Valid5) })
 data object Valid4 : ValidState({ setOf() })
 data object Valid5 : ValidState({ setOf() })
 
+sealed class UniCycleState(to: () -> Set<UniCycleState>) : State(to)
+data object UniCycle1 : UniCycleState({ setOf(UniCycle1) })
 
-sealed class CycleState(to: () -> Set<CycleState>) : State(to)
-data object Cycle1 : CycleState({ setOf(Cycle2) })
-data object Cycle2 : CycleState({ setOf(Cycle3) })
-data object Cycle3 : CycleState({ setOf(Cycle1) })
+sealed class BiCycleState(to: () -> Set<BiCycleState>) : State(to)
+data object BiCycle1 : BiCycleState({ setOf(BiCycle2) })
+data object BiCycle2 : BiCycleState({ setOf(BiCycle1) })
+
+sealed class TriCycleState(to: () -> Set<TriCycleState>) : State(to)
+data object TriCycle1 : TriCycleState({ setOf(TriCycle2) })
+data object TriCycle2 : TriCycleState({ setOf(TriCycle3) })
+data object TriCycle3 : TriCycleState({ setOf(TriCycle1) })
