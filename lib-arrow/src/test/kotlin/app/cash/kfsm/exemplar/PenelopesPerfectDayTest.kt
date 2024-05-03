@@ -1,15 +1,17 @@
 package app.cash.kfsm.exemplar
 
 import app.cash.kfsm.StateMachine
+import app.cash.kfsm.Transitioner
 import app.cash.kfsm.exemplar.Hamster.Asleep
 import app.cash.kfsm.exemplar.Hamster.Awake
 import app.cash.kfsm.exemplar.Hamster.Eating
 import app.cash.kfsm.exemplar.Hamster.RunningOnWheel
+import arrow.core.flatMap
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldBeEmpty
-import io.kotest.matchers.result.shouldBeFailure
-import io.kotest.matchers.result.shouldBeSuccess
 import io.kotest.matchers.shouldBe
 
 class PenelopesPerfectDayTest : StringSpec({
@@ -22,7 +24,7 @@ class PenelopesPerfectDayTest : StringSpec({
   val transitioner = HamsterTransitioner()
 
   "a newly woken hamster eats broccoli" {
-    val result = transitioner.transition(hamster, EatBreakfast("broccoli")).shouldBeSuccess()
+    val result = transitioner.transition(hamster, EatBreakfast("broccoli")).shouldBeRight()
     result.state shouldBe Eating
     transitioner.locks shouldBe listOf(hamster)
     transitioner.unlocks shouldBe listOf(result)
@@ -31,7 +33,7 @@ class PenelopesPerfectDayTest : StringSpec({
   }
 
   "the hamster has trouble eating cheese" {
-    transitioner.transition(hamster, EatBreakfast("cheese")) shouldBeFailure
+    transitioner.transition(hamster, EatBreakfast("cheese")) shouldBeLeft
       LactoseIntoleranceTroubles("cheese")
     transitioner.locks shouldBe listOf(hamster)
     transitioner.unlocks.shouldBeEmpty()
@@ -41,11 +43,11 @@ class PenelopesPerfectDayTest : StringSpec({
 
   "a sleeping hamster can awaken yet again" {
     transitioner.transition(hamster, EatBreakfast("broccoli"))
-      .map { transitioner.transition(it, RunOnWheel).getOrThrow() }
-      .map { transitioner.transition(it, GoToBed).getOrThrow() }
-      .map { transitioner.transition(it, WakeUp).getOrThrow() }
-      .map { transitioner.transition(it, EatBreakfast("broccoli")).getOrThrow() }
-      .shouldBeSuccess().state shouldBe Eating
+      .flatMap { transitioner.transition(it, RunOnWheel) }
+      .flatMap { transitioner.transition(it, GoToBed) }
+      .flatMap { transitioner.transition(it, WakeUp) }
+      .flatMap { transitioner.transition(it, EatBreakfast("broccoli")) }
+      .shouldBeRight().state shouldBe Eating
     transitioner.locks shouldBe listOf(
       hamster,
       hamster.copy(state = Eating),
@@ -71,7 +73,7 @@ class PenelopesPerfectDayTest : StringSpec({
   }
 
   "a sleeping hamster cannot immediately start running on the wheel" {
-    transitioner.transition(hamster.copy(state = Asleep), RunOnWheel).shouldBeFailure()
+    transitioner.transition(hamster.copy(state = Asleep), RunOnWheel).shouldBeLeft()
     transitioner.locks.shouldBeEmpty()
     transitioner.unlocks.shouldBeEmpty()
     transitioner.saves.shouldBeEmpty()
@@ -81,7 +83,7 @@ class PenelopesPerfectDayTest : StringSpec({
   "an eating hamster who wants to eat twice as hard will just keep eating" {
     val eatingHamster = hamster.copy(state = Eating)
     transitioner.transition(eatingHamster, EatBreakfast("broccoli"))
-      .shouldBeSuccess(eatingHamster)
+      .shouldBeRight(eatingHamster)
     transitioner.locks.shouldBeEmpty()
     transitioner.unlocks.shouldBeEmpty()
     transitioner.saves.shouldBeEmpty()
@@ -90,13 +92,13 @@ class PenelopesPerfectDayTest : StringSpec({
 
   // Add a test like this to ensure you don't have states that cannot be reached
   "the state machine is hunky dory" {
-    StateMachine.verify(Awake).shouldBeSuccess()
+    StateMachine.verify(Awake).shouldBeRight()
   }
 
   // Use this method to create mermaid diagrams in your markdown.
   // TODO(jem) - add a custom kotest matcher for ensuring the markdown is in a specific project file.
   "the mermaid diagram should be correct" {
-    StateMachine.mermaid(Awake).shouldBeSuccess(
+    StateMachine.mermaid(Awake).shouldBeRight(
       """stateDiagram-v2
     [*] --> Awake
     Asleep --> Awake

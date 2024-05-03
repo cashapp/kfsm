@@ -1,33 +1,37 @@
 package app.cash.kfsm
 
+import app.cash.quiver.extensions.ErrorOr
+import arrow.core.flatMap
+import arrow.core.left
+import arrow.core.right
+import io.kotest.assertions.arrow.core.shouldBeLeft
+import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.result.shouldBeFailure
-import io.kotest.matchers.result.shouldBeSuccess
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
 
 class TransitionerTest : StringSpec({
 
   fun transitioner(
-    pre: (Letter, LetterTransition) -> Result<Unit> = { _, _ -> Result.success(Unit) },
-    post: (Char, Letter, LetterTransition) -> Result<Unit> = { _, _, _ -> Result.success(Unit) },
-    persist: (Letter) -> Result<Letter> = { Result.success(it) },
+    pre: (Letter, LetterTransition) -> ErrorOr<Unit> = { _, _ -> Unit.right() },
+    post: (Char, Letter, LetterTransition) -> ErrorOr<Unit> = { _, _, _ -> Unit.right() },
+    persist: (Letter) -> ErrorOr<Letter> = { it.right() },
   ) = object : Transitioner<LetterTransition, Letter, Char>(persist) {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
-    override suspend fun preHook(value: Letter, via: LetterTransition): Result<Unit> =
+    override suspend fun preHook(value: Letter, via: LetterTransition): ErrorOr<Unit> =
       pre(value, via).also { preHookExecuted += 1 }
 
-    override suspend fun postHook(from: Char, value: Letter, via: LetterTransition): Result<Unit> =
+    override suspend fun postHook(from: Char, value: Letter, via: LetterTransition): ErrorOr<Unit> =
       post(from, value, via).also { postHookExecuted += 1 }
   }
 
   fun transition(from: Char = A, to: Char = B) = object : LetterTransition(from, to) {
     var effected = 0
-    override suspend fun effect(value: Letter): Result<Letter> {
+    override suspend fun effect(value: Letter): ErrorOr<Letter> {
       effected += 1
-      return Result.success(value.update(to))
+      return value.update(to).right()
     }
   }
 
@@ -35,7 +39,7 @@ class TransitionerTest : StringSpec({
     val transition = transition()
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), transition) shouldBeSuccess Letter(B)
+    transitioner.transition(Letter(A), transition) shouldBeRight Letter(B)
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 1
@@ -46,7 +50,7 @@ class TransitionerTest : StringSpec({
     val transition = transition()
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(B), transition) shouldBeSuccess Letter(B)
+    transitioner.transition(Letter(B), transition) shouldBeRight Letter(B)
 
     transitioner.preHookExecuted shouldBe 0
     transition.effected shouldBe 0
@@ -57,7 +61,7 @@ class TransitionerTest : StringSpec({
     val transition = transition()
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(C), transition).shouldBeFailure()
+    transitioner.transition(Letter(C), transition).shouldBeLeft()
       .shouldHaveMessage("Value cannot transition {A} to B, because it is currently C")
 
     transitioner.preHookExecuted shouldBe 0
@@ -69,9 +73,9 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("preHook error")
 
     val transition = transition()
-    val transitioner = transitioner(pre = { _, _ -> Result.failure(error) })
+    val transitioner = transitioner(pre = { _, _ -> error.left() })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 0
@@ -82,11 +86,11 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("effect error")
 
     val transition = object : LetterTransition(A, B) {
-      override suspend fun effect(value: Letter): Result<Letter> = Result.failure(error)
+      override suspend fun effect(value: Letter): ErrorOr<Letter> = error.left()
     }
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transitioner.preHookExecuted shouldBe 1
     transitioner.postHookExecuted shouldBe 0
@@ -96,9 +100,9 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("postHook error")
 
     val transition = transition()
-    val transitioner = transitioner(post = { _, _, _ -> Result.failure(error) })
+    val transitioner = transitioner(post = { _, _, _ -> error.left() })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transition.effected shouldBe 1
     transitioner.preHookExecuted shouldBe 1
@@ -111,7 +115,7 @@ class TransitionerTest : StringSpec({
     val transition = transition()
     val transitioner = transitioner(pre = { _, _ -> throw error })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transition.effected shouldBe 0
     transitioner.postHookExecuted shouldBe 0
@@ -121,11 +125,11 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("effect error")
 
     val transition = object : LetterTransition(A, B) {
-      override suspend fun effect(value: Letter): Result<Letter> = throw error
+      override suspend fun effect(value: Letter): ErrorOr<Letter> = throw error
     }
     val transitioner = transitioner()
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transitioner.preHookExecuted shouldBe 1
     transitioner.postHookExecuted shouldBe 0
@@ -137,7 +141,7 @@ class TransitionerTest : StringSpec({
     val transition = transition()
     val transitioner = transitioner(post = { _, _, _ -> throw error })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transition.effected shouldBe 1
     transitioner.preHookExecuted shouldBe 1
@@ -147,9 +151,9 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("persist error")
 
     val transition = transition()
-    val transitioner = transitioner(persist = { Result.failure(error) })
+    val transitioner = transitioner(persist = { error.left() })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 1
@@ -162,7 +166,7 @@ class TransitionerTest : StringSpec({
     val transition = transition()
     val transitioner = transitioner(persist = { throw error })
 
-    transitioner.transition(Letter(A), transition) shouldBeFailure error
+    transitioner.transition(Letter(A), transition) shouldBeLeft error
 
     transitioner.preHookExecuted shouldBe 1
     transition.effected shouldBe 1
@@ -177,9 +181,9 @@ class TransitionerTest : StringSpec({
     val transitioner = transitioner()
 
     transitioner.transition(Letter(A), aToB)
-      .mapCatching { transitioner.transition(it, bToC).getOrThrow() }
-      .mapCatching { transitioner.transition(it, cToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E)
+      .flatMap { transitioner.transition(it, bToC) }
+      .flatMap { transitioner.transition(it, cToD) }
+      .flatMap { transitioner.transition(it, dToE) } shouldBeRight Letter(E)
 
     transitioner.preHookExecuted shouldBe 4
     aToB.effected shouldBe 1
@@ -198,12 +202,12 @@ class TransitionerTest : StringSpec({
     val transitioner = transitioner()
 
     transitioner.transition(Letter(A), aToB)
-      .mapCatching { transitioner.transition(it, bToC).getOrThrow() }
-      .mapCatching { transitioner.transition(it, cToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToB).getOrThrow() }
-      .mapCatching { transitioner.transition(it, bToC).getOrThrow() }
-      .mapCatching { transitioner.transition(it, cToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E)
+      .flatMap { transitioner.transition(it, bToC) }
+      .flatMap { transitioner.transition(it, cToD) }
+      .flatMap { transitioner.transition(it, dToB) }
+      .flatMap { transitioner.transition(it, bToC) }
+      .flatMap { transitioner.transition(it, cToD) }
+      .flatMap { transitioner.transition(it, dToE) } shouldBeRight Letter(E)
 
     transitioner.preHookExecuted shouldBe 7
     aToB.effected shouldBe 1
@@ -222,10 +226,10 @@ class TransitionerTest : StringSpec({
     val transitioner = transitioner()
 
     transitioner.transition(Letter(A), aToB)
-      .mapCatching { transitioner.transition(it, bToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToB).getOrThrow() }
-      .mapCatching { transitioner.transition(it, bToD).getOrThrow() }
-      .mapCatching { transitioner.transition(it, dToE).getOrThrow() } shouldBeSuccess Letter(E)
+      .flatMap { transitioner.transition(it, bToD) }
+      .flatMap { transitioner.transition(it, dToB) }
+      .flatMap { transitioner.transition(it, bToD) }
+      .flatMap { transitioner.transition(it, dToE) } shouldBeRight Letter(E)
 
     transitioner.preHookExecuted shouldBe 5
     aToB.effected shouldBe 1
@@ -242,10 +246,10 @@ class TransitionerTest : StringSpec({
     val transitioner = transitioner()
 
     transitioner.transition(Letter(A), aToB)
-      .mapCatching { transitioner.transition(it, bToB).getOrThrow() }
-      .mapCatching { transitioner.transition(it, bToB).getOrThrow() }
-      .mapCatching { transitioner.transition(it, bToB).getOrThrow() }
-      .mapCatching { transitioner.transition(it, bToC).getOrThrow() } shouldBeSuccess Letter(C)
+      .flatMap { transitioner.transition(it, bToB) }
+      .flatMap { transitioner.transition(it, bToB) }
+      .flatMap { transitioner.transition(it, bToB) }
+      .flatMap { transitioner.transition(it, bToC) } shouldBeRight Letter(C)
 
     transitioner.preHookExecuted shouldBe 5
     aToB.effected shouldBe 1
@@ -260,12 +264,12 @@ class TransitionerTest : StringSpec({
       pre = { value, t ->
         value shouldBe Letter(A)
         t shouldBe transition
-        t.specificToThisTransitionType shouldBe "[A] -> B"
-        Result.success(Unit)
+        t.specificToThisTransitionType shouldBe "NonEmptySet(A) -> B"
+        Unit.right()
       }
     )
 
-    transitioner.transition(Letter(A), transition).shouldBeSuccess()
+    transitioner.transition(Letter(A), transition).shouldBeRight()
   }
 
   "post hook contains the correct from state, post value and transition" {
@@ -275,12 +279,12 @@ class TransitionerTest : StringSpec({
         from shouldBe B
         value shouldBe Letter(C)
         t shouldBe transition
-        t.specificToThisTransitionType shouldBe "[B] -> C"
-        Result.success(Unit)
+        t.specificToThisTransitionType shouldBe "NonEmptySet(B) -> C"
+        Unit.right()
       }
     )
 
-    transitioner.transition(Letter(B), transition).shouldBeSuccess()
+    transitioner.transition(Letter(B), transition).shouldBeRight()
   }
 })
 

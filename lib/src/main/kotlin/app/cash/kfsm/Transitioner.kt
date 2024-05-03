@@ -1,47 +1,37 @@
 package app.cash.kfsm
 
-import app.cash.quiver.extensions.ErrorOr
-import app.cash.quiver.extensions.flatTap
-import arrow.core.Either
-import arrow.core.flatMap
-import arrow.core.flatten
-import arrow.core.left
-import arrow.core.raise.either
-import arrow.core.right
-
-abstract class Transitioner<T : Transition<V, S>, V: Value<V, S>, S : State>(
-  private val persist: suspend (V) -> ErrorOr<V> = { it.right() }
+abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State>(
+  private val persist: suspend (V) -> Result<V> = { Result.success(it) }
 ) {
 
-  open suspend fun preHook(value: V, via: T): ErrorOr<Unit> = Unit.right()
+  open suspend fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 
-  open suspend fun postHook(from: S, value: V, via: T): ErrorOr<Unit> = Unit.right()
+  open suspend fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
 
   suspend fun transition(
     value: V,
     transition: T
-  ): ErrorOr<V> = when {
+  ): Result<V> = when {
     transition.from.contains(value.state) -> doTheTransition(value, transition)
     // Self-cycled transitions will be effected by the first case.
     // If we still see a transition to self then this is a no-op.
     transition.to == value.state -> ignoreAlreadyCompletedTransition(value, transition)
-    else -> InvalidStateTransition(transition, value).left()
+    else -> Result.failure(InvalidStateTransition(transition, value))
   }
 
   private suspend fun doTheTransition(
     value: V,
     transition: T
-  ) = Either.catch {
-    preHook(value, transition)
-      .flatMap{ transition.effect(value) }
+  ): Result<V> =
+    runCatching { preHook(value, transition).getOrThrow() }
+      .mapCatching { transition.effect(value).getOrThrow() }
       .map { it.update(transition.to) }
-      .flatMap { persist(it) }
-      .flatTap { postHook(value.state, it, transition) }
-  }.flatten()
+      .mapCatching { persist(it).getOrThrow() }
+      .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }
 
   private fun ignoreAlreadyCompletedTransition(
     value: V,
     transition: T
-  ): ErrorOr<V> = value.update(transition.to).right()
+  ): Result<V> = Result.success(value.update(transition.to))
 }
 

@@ -7,11 +7,15 @@ plugins {
 }
 
 dependencies {
+  // no versions on libraries
   implementation(kotlin("reflect"))
+  implementation(libs.arrowCore)
   implementation(libs.kotlinLoggingJvm)
+  implementation(libs.quiver)
 
   testImplementation(libs.junitApi)
   testImplementation(libs.kotestAssertions)
+  testImplementation(libs.kotestAssertionsArrow)
   testImplementation(libs.kotestJunitRunnerJvm)
   testImplementation(libs.kotestAssertions)
   testImplementation(libs.kotestJunitRunnerJvm)
