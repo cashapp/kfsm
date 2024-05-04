@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.4.0]
+
 ### Breaking
 
 * Upon request, introduced a new API that uses kotlin native types and does not include Arrow as a dependency.
