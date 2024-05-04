@@ -19,8 +19,7 @@ object StateMachine {
       states.toSet().flatMap { from ->
         from.subsequentStates.map { to -> "${from::class.simpleName} --> ${to::class.simpleName}" }
       }.toList().sorted()
-    )
-      .joinToString("\n    ")
+    ).joinToString("\n    ")
   }
 
   private fun <S : State> verify(head: S, type: KClass<out S>) = walkTree(head).flatMap { seen ->
