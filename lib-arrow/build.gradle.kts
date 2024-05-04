@@ -7,11 +7,15 @@ plugins {
 }
 
 dependencies {
+  // no versions on libraries
   implementation(kotlin("reflect"))
+  implementation(libs.arrowCore)
   implementation(libs.kotlinLoggingJvm)
+  implementation(libs.quiver)
 
   testImplementation(libs.junitApi)
   testImplementation(libs.kotestAssertions)
+  testImplementation(libs.kotestAssertionsArrow)
   testImplementation(libs.kotestJunitRunnerJvm)
   testImplementation(libs.kotestAssertions)
   testImplementation(libs.kotestJunitRunnerJvm)
@@ -34,7 +38,7 @@ tasks.withType<DokkaTask>().configureEach {
       // Points source links to GitHub
       sourceLink {
         localDirectory.set(file("src/main/kotlin"))
-        remoteUrl.set(URL("https://github.com/cashapp/kfsm/tree/master/lib/src/main/kotlin"))
+        remoteUrl.set(URL("https://github.com/cashapp/kfsm/tree/master/lib-arrow/src/main/kotlin"))
         remoteLineSuffix.set("#L")
       }
     }

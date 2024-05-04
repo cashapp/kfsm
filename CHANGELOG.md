@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* Upon request, introduced a new API that uses kotlin native types and does not include Arrow as a dependency.
+  The original lib is renamed `lib-arrow`.
+
 ## [0.3.0]
 
 ### Breaking

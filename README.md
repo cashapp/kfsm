@@ -52,6 +52,11 @@ data class Light(override val state: Color) : Value<Light, Color> {
 
 Types that provide the required side-effects that define a transition in the machine.
 
+<aside>
+This syntax assumes you are using the `lib-arrow` library. If you prefer to use standard Kotlin syntax, use `lib` 
+instead.
+</aside>
+
 ```kotlin
 abstract class ColorChange(
     from: NonEmptySet<Color>,
