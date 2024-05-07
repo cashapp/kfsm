@@ -10,14 +10,14 @@ class TransitionTest : StringSpec({
   }
 
   "cannot create an invalid state transition from a set of states" {
-    shouldThrow<IllegalArgumentException> { LetterTransition(setOf(B, A), C) }
+    shouldThrow<IllegalArgumentException> { LetterTransition(States(B, A), C) }
   }
 
 })
 
-open class LetterTransition(from: Set<Char>, to: Char): Transition<Letter, Char>(from, to) {
-  constructor(from: Char, to: Char) : this(setOf(from), to)
+open class LetterTransition(from: States<Char>, to: Char): Transition<Letter, Char>(from, to) {
+  constructor(from: Char, to: Char) : this(States(from), to)
 
-  val specificToThisTransitionType: String = "$from -> $to"
+  val specificToThisTransitionType: String = "${from.set} -> $to"
 }
 

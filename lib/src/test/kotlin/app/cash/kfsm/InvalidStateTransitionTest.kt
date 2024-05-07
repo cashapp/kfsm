@@ -10,7 +10,7 @@ class InvalidStateTransitionTest : StringSpec({
   }
 
   "with many from-states has correct message" {
-    InvalidStateTransition(LetterTransition(setOf(C, B), D), Letter(E)).message shouldBe
+    InvalidStateTransition(LetterTransition(States(C, B), D), Letter(E)).message shouldBe
       "Value cannot transition {B, C} to D, because it is currently E"
   }
 })
