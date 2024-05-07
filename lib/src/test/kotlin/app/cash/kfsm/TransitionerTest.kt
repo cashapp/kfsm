@@ -32,7 +32,7 @@ class TransitionerTest : StringSpec({
   }
 
   "effects valid transition" {
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner()
 
     transitioner.transition(Letter(A), transition) shouldBeSuccess Letter(B)
@@ -43,7 +43,7 @@ class TransitionerTest : StringSpec({
   }
 
   "ignores completed transition" {
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner()
 
     transitioner.transition(Letter(B), transition) shouldBeSuccess Letter(B)
@@ -54,7 +54,7 @@ class TransitionerTest : StringSpec({
   }
 
   "returns error on invalid transition" {
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner()
 
     transitioner.transition(Letter(C), transition).shouldBeFailure()
@@ -68,7 +68,7 @@ class TransitionerTest : StringSpec({
   "returns error when preHook errors" {
     val error = RuntimeException("preHook error")
 
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(pre = { _, _ -> Result.failure(error) })
 
     transitioner.transition(Letter(A), transition) shouldBeFailure error
@@ -95,7 +95,7 @@ class TransitionerTest : StringSpec({
   "returns error when postHook errors" {
     val error = RuntimeException("postHook error")
 
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(post = { _, _, _ -> Result.failure(error) })
 
     transitioner.transition(Letter(A), transition) shouldBeFailure error
@@ -108,7 +108,7 @@ class TransitionerTest : StringSpec({
   "returns error when preHook throws" {
     val error = RuntimeException("preHook error")
 
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(pre = { _, _ -> throw error })
 
     transitioner.transition(Letter(A), transition) shouldBeFailure error
@@ -134,7 +134,7 @@ class TransitionerTest : StringSpec({
   "returns error when postHook throws" {
     val error = RuntimeException("postHook error")
 
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(post = { _, _, _ -> throw error })
 
     transitioner.transition(Letter(A), transition) shouldBeFailure error
@@ -146,7 +146,7 @@ class TransitionerTest : StringSpec({
   "returns error when persist fails" {
     val error = RuntimeException("persist error")
 
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(persist = { Result.failure(error) })
 
     transitioner.transition(Letter(A), transition) shouldBeFailure error
@@ -159,7 +159,7 @@ class TransitionerTest : StringSpec({
   "returns error when persist throws" {
     val error = RuntimeException("persist error")
 
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(persist = { throw error })
 
     transitioner.transition(Letter(A), transition) shouldBeFailure error
@@ -255,7 +255,7 @@ class TransitionerTest : StringSpec({
   }
 
   "pre hook contains the correct from value and transition" {
-    val transition = transition()
+    val transition = transition(from = A, to = B)
     val transitioner = transitioner(
       pre = { value, t ->
         value shouldBe Letter(A)
@@ -271,7 +271,7 @@ class TransitionerTest : StringSpec({
   "post hook contains the correct from state, post value and transition" {
     val transition = transition(from = B, to = C)
     val transitioner = transitioner(
-      post = { from, value, t->
+      post = { from, value, t ->
         from shouldBe B
         value shouldBe Letter(C)
         t shouldBe transition
