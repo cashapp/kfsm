@@ -1,5 +1,7 @@
 package app.cash.kfsm.exemplar
 
+import app.cash.kfsm.States
+import app.cash.kfsm.States.Companion.toStates
 import app.cash.kfsm.Transition
 import app.cash.kfsm.exemplar.Hamster.Asleep
 import app.cash.kfsm.exemplar.Hamster.Awake
@@ -9,11 +11,14 @@ import app.cash.kfsm.exemplar.Hamster.RunningOnWheel
 
 // Create your own base transition class in order to extend your transition collection with common functionality
 abstract class HamsterTransition(
-  from: Set<Hamster.State>,
+  from: States<Hamster.State>,
   to: Hamster.State
 ) : Transition<Hamster, Hamster.State>(from, to) {
   // Convenience constructor for when the from set has only one value
-  constructor(from: Hamster.State, to: Hamster.State) : this(setOf(from), to)
+  constructor(from: Hamster.State, to: Hamster.State) : this(States(from), to)
+
+  // Convenience constructor for the deprecated variant that takes a set instead of States
+  constructor(from: Set<Hamster.State>, to: Hamster.State) : this(from.toStates(), to)
 
   // Demonstrates how you can add base behaviour to transitions for use in pre and post hooks.
   open val description: String = ""

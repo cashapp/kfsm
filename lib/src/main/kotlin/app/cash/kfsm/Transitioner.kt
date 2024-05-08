@@ -12,7 +12,7 @@ abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State>(
     value: V,
     transition: T
   ): Result<V> = when {
-    transition.from.contains(value.state) -> doTheTransition(value, transition)
+    transition.from.set.contains(value.state) -> doTheTransition(value, transition)
     // Self-cycled transitions will be effected by the first case.
     // If we still see a transition to self then this is a no-op.
     transition.to == value.state -> ignoreAlreadyCompletedTransition(value, transition)
