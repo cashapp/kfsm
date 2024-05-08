@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* Introduced States as a proxy for NonEmptySet when defining Transitions. This allows for safer transition definitions
+  in the non-Arrow library.
+* The Arrow specific library will eventually be removed, as the non-Arrow presenting API has equivalent semantics.
+
+
 ## [0.4.0]
 
 ### Breaking

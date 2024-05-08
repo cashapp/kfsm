@@ -59,11 +59,11 @@ instead.
 
 ```kotlin
 abstract class ColorChange(
-    from: NonEmptySet<Color>,
+    from: States<Color>,
     to: Color
 ) : Transition<Light, Color>(from, to) {
     // Convenience constructor for when the from set has only one value
-    constructor(from: Color, to: Color) : this(nonEmptySetOf(from), to)
+    constructor(from: Color, to: Color) : this(States(from), to)
 }
 
 class Go(private val camera: Camera) : ColorChange(from = Red, to = Green) {
@@ -86,7 +86,7 @@ persist values.
 class LightTransitioner(
     private val database: Database
 ) : Transitioner<ColorChange, Light, Color>(
-    persist = { it.also(database::update).right() }
+    persist = { Result.success(it.also(database::update)) }
 )
 ```
 
@@ -98,11 +98,11 @@ It is sometimes necessary to execute effects before and after a transition. Thes
 
 ```kotlin
 class LightTransitioner ...  {
-    override suspend fun preHook(value: V, via: T): ErrorOr<Unit> = Either.catch {
+    override suspend fun preHook(value: V, via: T): Result<Unit> = runCatching {
         globalLock.lock(value)
     }
 
-    override suspend fun postHook(from: S, value: V, via: T): ErrorOr<Unit> = Either.catch {
+    override suspend fun postHook(from: S, value: V, via: T): Result<Unit> = runCatching {
         globalLock.unlock(value)
         notificationService.send(via.successNotifications())
     }
@@ -116,7 +116,7 @@ transitioner.
 
 ```kotlin
 val transitioner = LightTransitioner(database)
-val greenLight: ErrorOr<Light> = transitioner.transition(redLight, Go)
+val greenLight: Result<Light> = transitioner.transition(redLight, Go)
 ```
 
 ### More examples
