@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.0]
+
 ### Breaking
 
 * Introduced States as a proxy for NonEmptySet when defining Transitions. This allows for safer transition definitions
