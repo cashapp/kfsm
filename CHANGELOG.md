@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* As promised with the 0.5 release, the Arrow specific library has been removed. Please migrate to `lib`.
+  * Replace `NonEmptySet` with `States`.
+  * Replace ErrorOr/Either with `Result`.
+* Removed the v0.3 API. Please migrate to the new API.
+
 ## [0.5.0]
 
 ### Breaking

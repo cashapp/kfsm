@@ -12,4 +12,3 @@ gradleEnterprise {
 }
 
 include(":lib")
-include(":lib-arrow")
