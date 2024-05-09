@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.5.1]
+
 ### Breaking
 
 * As promised with the 0.5 release, the Arrow specific library has been removed. Please migrate to `lib`.
