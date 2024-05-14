@@ -12,12 +12,15 @@ class TransitionerTest : StringSpec({
     pre: (Letter, LetterTransition) -> Result<Unit> = { _, _ -> Result.success(Unit) },
     post: (Char, Letter, LetterTransition) -> Result<Unit> = { _, _, _ -> Result.success(Unit) },
     persist: (Letter) -> Result<Letter> = { Result.success(it) },
-  ) = object : Transitioner<LetterTransition, Letter, Char>(persist) {
+  ) = object : Transitioner<LetterTransition, Letter, Char>() {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
     override suspend fun preHook(value: Letter, via: LetterTransition): Result<Unit> =
       pre(value, via).also { preHookExecuted += 1 }
+
+    override suspend fun persist(value: Letter, via: LetterTransition): Result<Letter> =
+      persist(value)
 
     override suspend fun postHook(from: Char, value: Letter, via: LetterTransition): Result<Unit> =
       post(from, value, via).also { postHookExecuted += 1 }

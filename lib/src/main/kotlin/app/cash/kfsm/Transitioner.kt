@@ -1,10 +1,10 @@
 package app.cash.kfsm
 
-abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State>(
-  private val persist: suspend (V) -> Result<V> = { Result.success(it) }
-) {
+abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State> {
 
   open suspend fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
+
+  open suspend fun persist(value: V, via: T): Result<V> = Result.success(value)
 
   open suspend fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
 
@@ -26,7 +26,7 @@ abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State>(
     runCatching { preHook(value, transition).getOrThrow() }
       .mapCatching { transition.effect(value).getOrThrow() }
       .map { it.update(transition.to) }
-      .mapCatching { persist(it).getOrThrow() }
+      .mapCatching { persist(it, transition).getOrThrow() }
       .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }
 
   private fun ignoreAlreadyCompletedTransition(

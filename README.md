@@ -85,9 +85,10 @@ persist values.
 ```kotlin
 class LightTransitioner(
     private val database: Database
-) : Transitioner<ColorChange, Light, Color>(
-    persist = { Result.success(it.also(database::update)) }
-)
+) : Transitioner<ColorChange, Light, Color>() {
+ 
+    override suspend fun persist(value: Light, change: ColorChange): Result<Light> = database.update(value)
+}
 ```
 
 Each time a transition is successful, the persist function will be called.
@@ -98,6 +99,9 @@ It is sometimes necessary to execute effects before and after a transition. Thes
 
 ```kotlin
 class LightTransitioner ...  {
+    
+    // ...
+    
     override suspend fun preHook(value: V, via: T): Result<Unit> = runCatching {
         globalLock.lock(value)
     }
