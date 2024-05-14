@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* Added the transition to the persist function and moved persist to be an open method instead of function injection
+  constructor argument. 
+
 ## [0.5.1]
 
 ### Breaking

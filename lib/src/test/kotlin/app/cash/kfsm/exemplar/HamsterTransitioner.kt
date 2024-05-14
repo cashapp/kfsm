@@ -5,10 +5,7 @@ import app.cash.kfsm.exemplar.Hamster.State
 
 class HamsterTransitioner(
   val saves: MutableList<Hamster> = mutableListOf()
-) : Transitioner<HamsterTransition, Hamster, State>(
-  // This is where you define how to save your updated value to a data store
-  persist = { Result.success(it.also(saves::add)) }
-) {
+) : Transitioner<HamsterTransition, Hamster, State>() {
 
   val locks = mutableListOf<Hamster>()
   val unlocks = mutableListOf<Hamster>()
@@ -19,6 +16,10 @@ class HamsterTransitioner(
   override suspend fun preHook(value: Hamster, via: HamsterTransition): Result<Unit> = runCatching {
     locks.add(value)
   }
+
+  // This is where you define how to save your updated value to a data store
+  override suspend fun persist(value: Hamster, via: HamsterTransition): Result<Hamster> =
+    Result.success(value.also(saves::add))
 
   // Any action you might wish to take after transitioning successfully, such as sending events or notifications
   override suspend fun postHook(from: State, value: Hamster, via: HamsterTransition): Result<Unit> = runCatching {
