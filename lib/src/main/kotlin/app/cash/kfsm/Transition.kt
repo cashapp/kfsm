@@ -10,5 +10,9 @@ open class Transition<V: Value<V, S>, S : State>(val from: States<S>, val to: S)
 
   constructor(from: S, to: S) : this(States(from), to)
 
-  open suspend fun effect(value: V): Result<V> = Result.success(value)
+  /** The effect executed when transitioning from [from] to [to]. */
+  open fun effect(value: V): Result<V> = Result.success(value)
+
+  /** The effect executed when transitioning from [from] to [to], but only when using `TransitionerAsync` */
+  open suspend fun effectAsync(value: V): Result<V> = effect(value)
 }

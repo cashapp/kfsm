@@ -1,14 +1,14 @@
 package app.cash.kfsm
 
-abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State> {
+abstract class TransitionerAsync<T : Transition<V, S>, V : Value<V, S>, S : State> {
 
-  open fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
+  open suspend fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 
-  open fun persist(value: V, via: T): Result<V> = Result.success(value)
+  open suspend fun persist(value: V, via: T): Result<V> = Result.success(value)
 
-  open fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
+  open suspend fun postHook(from: S, value: V, via: T): Result<Unit> = Result.success(Unit)
 
-  fun transition(
+  suspend fun transition(
     value: V,
     transition: T
   ): Result<V> = when {
@@ -19,12 +19,12 @@ abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State> {
     else -> Result.failure(InvalidStateTransition(transition, value))
   }
 
-  private fun doTheTransition(
+  private suspend fun doTheTransition(
     value: V,
     transition: T
   ): Result<V> =
     runCatching { preHook(value, transition).getOrThrow() }
-      .mapCatching { transition.effect(value).getOrThrow() }
+      .mapCatching { transition.effectAsync(value).getOrThrow() }
       .map { it.update(transition.to) }
       .mapCatching { persist(it, transition).getOrThrow() }
       .mapCatching { it.also { postHook(value.state, it, transition).getOrThrow() } }

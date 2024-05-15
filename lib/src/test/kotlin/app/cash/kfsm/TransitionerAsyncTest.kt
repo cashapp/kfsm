@@ -6,29 +6,29 @@ import io.kotest.matchers.result.shouldBeSuccess
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.throwable.shouldHaveMessage
 
-class TransitionerTest : StringSpec({
+class TransitionerAsyncTest : StringSpec({
 
   fun transitioner(
     pre: (Letter, LetterTransition) -> Result<Unit> = { _, _ -> Result.success(Unit) },
     post: (Char, Letter, LetterTransition) -> Result<Unit> = { _, _, _ -> Result.success(Unit) },
     persist: (Letter) -> Result<Letter> = { Result.success(it) },
-  ) = object : Transitioner<LetterTransition, Letter, Char>() {
+  ) = object : TransitionerAsync<LetterTransition, Letter, Char>() {
     var preHookExecuted = 0
     var postHookExecuted = 0
 
-    override fun preHook(value: Letter, via: LetterTransition): Result<Unit> =
+    override suspend fun preHook(value: Letter, via: LetterTransition): Result<Unit> =
       pre(value, via).also { preHookExecuted += 1 }
 
-    override fun persist(value: Letter, via: LetterTransition): Result<Letter> =
+    override suspend fun persist(value: Letter, via: LetterTransition): Result<Letter> =
       persist(value)
 
-    override fun postHook(from: Char, value: Letter, via: LetterTransition): Result<Unit> =
+    override suspend fun postHook(from: Char, value: Letter, via: LetterTransition): Result<Unit> =
       post(from, value, via).also { postHookExecuted += 1 }
   }
 
   fun transition(from: Char = A, to: Char = B) = object : LetterTransition(from, to) {
     var effected = 0
-    override fun effect(value: Letter): Result<Letter> {
+    override suspend fun effectAsync(value: Letter): Result<Letter> {
       effected += 1
       return Result.success(value.update(to))
     }
@@ -85,7 +85,7 @@ class TransitionerTest : StringSpec({
     val error = RuntimeException("effect error")
 
     val transition = object : LetterTransition(A, B) {
-      override fun effect(value: Letter): Result<Letter> = Result.failure(error)
+      override suspend fun effectAsync(value: Letter): Result<Letter> = Result.failure(error)
     }
     val transitioner = transitioner()
 
