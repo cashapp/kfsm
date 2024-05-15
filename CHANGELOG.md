@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.6.0]
+
 ### Breaking
 
 * Converted the default usages of the library to be non-suspending. Added the suspending variants back as `*Async`.
