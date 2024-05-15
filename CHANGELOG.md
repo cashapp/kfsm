@@ -4,8 +4,9 @@
 
 ### Breaking
 
+* Converted the default usages of the library to be non-suspending. Added the suspending variants back as `*Async`.
 * Added the transition to the persist function and moved persist to be an open method instead of function injection
-  constructor argument. 
+  constructor argument.
 
 ## [0.5.1]
 

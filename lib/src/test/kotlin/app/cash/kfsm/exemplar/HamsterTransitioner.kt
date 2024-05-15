@@ -13,16 +13,16 @@ class HamsterTransitioner(
 
 
   // Any action you might wish to take prior to transitioning, such as pessimistic locking
-  override suspend fun preHook(value: Hamster, via: HamsterTransition): Result<Unit> = runCatching {
+  override fun preHook(value: Hamster, via: HamsterTransition): Result<Unit> = runCatching {
     locks.add(value)
   }
 
   // This is where you define how to save your updated value to a data store
-  override suspend fun persist(value: Hamster, via: HamsterTransition): Result<Hamster> =
+  override fun persist(value: Hamster, via: HamsterTransition): Result<Hamster> =
     Result.success(value.also(saves::add))
 
   // Any action you might wish to take after transitioning successfully, such as sending events or notifications
-  override suspend fun postHook(from: State, value: Hamster, via: HamsterTransition): Result<Unit> = runCatching {
+  override fun postHook(from: State, value: Hamster, via: HamsterTransition): Result<Unit> = runCatching {
     notifications.add("${value.name} was $from, then began ${via.description} and is now ${via.to}")
     unlocks.add(value)
   }

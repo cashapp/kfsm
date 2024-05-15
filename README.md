@@ -33,10 +33,9 @@ data object Amber : Color({ setOf(Red) })
 data object Red : Color({ setOf(Green) })
 ```
 
-<aside>
-Be sure to define your state constructor with functions rather than literal values if you require cycles in your state
-machine. Otherwise, you are likely to encounter null pointer exceptions.
-</aside>
+> ⚠️ Be sure to define your state constructor with _functions_ rather than literal values 
+> if you require cycles in your state machine. Otherwise, you are likely to encounter
+> null pointer exceptions from the Kotlin runtime's inability to define the types.
 
 ### Value
 
@@ -51,11 +50,6 @@ data class Light(override val state: Color) : Value<Light, Color> {
 ### Transition
 
 Types that provide the required side-effects that define a transition in the machine.
-
-<aside>
-This syntax assumes you are using the `lib-arrow` library. If you prefer to use standard Kotlin syntax, use `lib` 
-instead.
-</aside>
 
 ```kotlin
 abstract class ColorChange(
@@ -123,10 +117,58 @@ val transitioner = LightTransitioner(database)
 val greenLight: Result<Light> = transitioner.transition(redLight, Go)
 ```
 
+### Putting it all together
+
+```kotlin
+// The state
+sealed class Color(to: () -> Set<Color>) : app.cash.kfsm.State(to)
+data object Green : Color({ setOf(Amber) })
+data object Amber : Color({ setOf(Red) })
+data object Red : Color({ setOf(Green) })
+
+// The value
+data class Light(override val state: Color) : Value<Light, Color> {
+    override fun update(newState: Color): Light = this.copy(state = newState)
+}
+
+// The transitions
+abstract class ColorChange(
+    from: States<Color>,
+    to: Color
+) : Transition<Light, Color>(from, to) {
+    // Convenience constructor for when the from set has only one value
+    constructor(from: Color, to: Color) : this(States(from), to)
+}
+class Go(private val camera: Camera) : ColorChange(from = Red, to = Green) {
+    override suspend fun effect(value: Light) = camera.disable()
+}
+object Slow : ColorChange(from = Green, to = Amber)
+class Stop(private val camera: Camera) : ColorChange(from = Amber, to = Red) {
+    override suspend fun effect(value: Light) = camera.enable()
+}
+
+// The transitioner
+class LightTransitioner(
+    private val database: Database
+) : Transitioner<ColorChange, Light, Color>() {
+    override suspend fun persist(value: Light, change: ColorChange): Result<Light> = database.update(value)
+}
+
+// main ...
+val transitioner = LightTransitioner(database)
+val greenLight: Result<Light> = transitioner.transition(redLight, Go)
+```
+
 ### More examples
 
 See [lib/src/test/kotlin/app/cash/kfsm/exemplar](https://github.com/cashapp/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/exemplar)
-for a full example of how to use this library.
+for a different example of how to use this library.
+
+### Coroutine Support
+
+If you are using coroutines and need suspending function support, you can extend `TransitionerAsync` instead of 
+`Transitioner` and implement any suspending transition effects via the `Transition.effectAsync` method.
+
 
 ## Safety
 
@@ -149,7 +191,6 @@ from a given starting state.
 StateMachine.verify(Green) shouldBeRight true
 ```
 
-
 ### Document your state machine
 
 The utility `StateMachine.mermaid` will generate a mermaid diagram of your state machine. This can be rendered in markdown.
@@ -171,7 +212,8 @@ at [https://cashapp.github.io/kfsm](https://cashapp.github.io/kfsm)
 
 See a list of changes in each release in the [CHANGELOG](CHANGELOG.md).
 
-## Contributing
+See [lib/src/test/kotlin/app/cash/kfsm/exemplar](https://github.com/cashapp/kfsm/tree/main/lib/src/test/kotlin/app/cash/kfsm/exemplar)
+for a different example of how to use this library.
 
 For details on contributing, see the [CONTRIBUTING](CONTRIBUTING.md) guide.
 

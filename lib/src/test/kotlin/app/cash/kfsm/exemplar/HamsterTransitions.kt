@@ -25,7 +25,7 @@ abstract class HamsterTransition(
 }
 
 class EatBreakfast(private val food: String) : HamsterTransition(from = Awake, to = Eating) {
-  override suspend fun effect(value: Hamster): Result<Hamster> =
+  override fun effect(value: Hamster): Result<Hamster> =
     when (food) {
       "broccoli" -> {
         value.eat(food)
@@ -40,7 +40,7 @@ class EatBreakfast(private val food: String) : HamsterTransition(from = Awake, t
 }
 
 object RunOnWheel : HamsterTransition(from = Eating, to = RunningOnWheel) {
-  override suspend fun effect(value: Hamster): Result<Hamster> {
+  override fun effect(value: Hamster): Result<Hamster> {
     // This println represents a side-effect
     println("$value moves to the wheel")
     return Result.success(value)
@@ -50,7 +50,7 @@ object RunOnWheel : HamsterTransition(from = Eating, to = RunningOnWheel) {
 }
 
 object GoToBed : HamsterTransition(from = setOf(Eating, RunningOnWheel, Resting), to = Asleep) {
-  override suspend fun effect(value: Hamster): Result<Hamster> {
+  override fun effect(value: Hamster): Result<Hamster> {
     value.sleep()
     return Result.success(value)
   }
@@ -59,7 +59,7 @@ object GoToBed : HamsterTransition(from = setOf(Eating, RunningOnWheel, Resting)
 }
 
 object FlakeOut : HamsterTransition(from = setOf(Eating, RunningOnWheel), to = Resting) {
-  override suspend fun effect(value: Hamster): Result<Hamster> {
+  override fun effect(value: Hamster): Result<Hamster> {
     println("$value has had enough and is sitting cute")
     return Result.success(value)
   }
@@ -68,7 +68,7 @@ object FlakeOut : HamsterTransition(from = setOf(Eating, RunningOnWheel), to = R
 }
 
 object WakeUp : HamsterTransition(from = Asleep, to = Awake) {
-  override suspend fun effect(value: Hamster): Result<Hamster> {
+  override fun effect(value: Hamster): Result<Hamster> {
     println("$value opens her eyes")
     return Result.success(value)
   }
