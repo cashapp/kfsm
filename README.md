@@ -33,7 +33,8 @@ data object Amber : Color({ setOf(Red) })
 data object Red : Color({ setOf(Green) })
 ```
 
-> ⚠️ Be sure to define your state constructor with _functions_ rather than literal values 
+> [!IMPORTANT]
+> Be sure to define your state constructor with _functions_ rather than literal values 
 > if you require cycles in your state machine. Otherwise, you are likely to encounter
 > null pointer exceptions from the Kotlin runtime's inability to define the types.
 
@@ -219,15 +220,15 @@ For details on contributing, see the [CONTRIBUTING](CONTRIBUTING.md) guide.
 
 ### Building
 
-> ℹ️ kFSM uses [Hermit](https://cashapp.github.io/hermit/).
+> [!NOTE]
+> kFSM uses [Hermit](https://cashapp.github.io/hermit/).
 >
->> Hermit ensures that your team, your contributors, and your CI have the same consistent tooling. Here are
-> > the [installation instructions](https://cashapp.github.io/hermit/usage/get-started/#installing-hermit).
->>
->> [Activate Hermit](https://cashapp.github.io/hermit/usage/get-started/#activating-an-environment) either
-> > by [enabling the shell hooks](https://cashapp.github.io/hermit/usage/shell/) (one-time only, recommended) or
-> > manually
-> > sourcing the env with `. ./bin/activate-hermit`.
+> Hermit ensures that your team, your contributors, and your CI have the same consistent tooling. Here are
+> the [installation instructions](https://cashapp.github.io/hermit/usage/get-started/#installing-hermit).
+>
+> [Activate Hermit](https://cashapp.github.io/hermit/usage/get-started/#activating-an-environment) either
+> by [enabling the shell hooks](https://cashapp.github.io/hermit/usage/shell/) (one-time only, recommended) or
+> manually sourcing the env with `. ./bin/activate-hermit`.
 
 Use gradle to run all tests
 
