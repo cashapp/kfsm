@@ -16,7 +16,7 @@ data class Hamster(
     println("◟(`･ｪ･)  ╥━╥   (goes to bed)")
   }
 
-  sealed class State(to: () -> Set<State>) : app.cash.kfsm.State(to)
+  sealed class State(to: () -> Set<State>) : app.cash.kfsm.State<State>(to)
 
   /** Hamster is awake... and hungry! */
   data object Awake : State({ setOf(Eating) })

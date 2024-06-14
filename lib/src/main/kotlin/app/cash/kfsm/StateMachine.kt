@@ -7,10 +7,10 @@ import kotlin.reflect.full.superclasses
 object StateMachine {
 
   /** Check your state machine covers all subtypes */
-  fun <S : State> verify(head: S): Result<Set<State>> = verify(head, baseType(head))
+  fun <S : State<S>> verify(head: S): Result<Set<State<S>>> = verify(head, baseType(head))
 
   /** Render a state machine in Mermaid markdown */
-  fun <S : State> mermaid(head: S): Result<String> = walkTree(head).map { states ->
+  fun <S : State<S>> mermaid(head: S): Result<String> = walkTree(head).map { states ->
     listOf("stateDiagram-v2", "[*] --> ${head::class.simpleName}").plus(
       states.toSet().flatMap { from ->
         from.subsequentStates.map { to -> "${from::class.simpleName} --> ${to::class.simpleName}" }
@@ -18,7 +18,7 @@ object StateMachine {
     ).joinToString("\n    ")
   }
 
-  private fun <S : State> verify(head: S, type: KClass<out S>): Result<Set<State>> =
+  private fun <S : State<S>> verify(head: S, type: KClass<out S>): Result<Set<State<S>>> =
     walkTree(head).mapCatching { seen ->
       val notSeen = type.sealedSubclasses.minus(seen.map { it::class }.toSet()).toList().sortedBy { it.simpleName }
       when {
@@ -29,10 +29,10 @@ object StateMachine {
       }
     }
 
-  private fun walkTree(
-    current: State,
-    statesSeen: Set<State> = emptySet()
-  ): Result<Set<State>> = runCatching {
+  private fun <S : State<S>> walkTree(
+    current: S,
+    statesSeen: Set<S> = emptySet()
+  ): Result<Set<S>> = runCatching {
     when {
       statesSeen.contains(current) -> statesSeen
       current.subsequentStates.isEmpty() -> statesSeen.plus(current)
@@ -42,9 +42,8 @@ object StateMachine {
     }
   }
 
-  @Suppress("UNCHECKED_CAST") private fun <S : State> baseType(s: S): KClass<out S> = s::class.allSuperclasses
+  @Suppress("UNCHECKED_CAST") private fun <S : State<S>> baseType(s: S): KClass<out S> = s::class.allSuperclasses
     .find { it.superclasses.contains(State::class) }!! as KClass<out S>
-
 }
 
 data class InvalidStateMachine(override val message: String) : Exception(message)

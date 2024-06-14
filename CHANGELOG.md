@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Breaking
+
+* Added type argument to State to allow for the ability to add customer behaviour to your states. This is a breaking
+  change as it will require you to update your state classes to include the type argument.
+
 ## [0.6.0]
 
 ### Breaking

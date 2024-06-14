@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State> {
+abstract class Transitioner<T : Transition<V, S>, V : Value<V, S>, S : State<S>> {
 
   open fun preHook(value: V, via: T): Result<Unit> = Result.success(Unit)
 

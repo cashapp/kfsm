@@ -5,7 +5,7 @@ data class Letter(override val state: Char) : Value<Letter, Char> {
   override fun update(newState: Char): Letter = copy(state = newState)
 }
 
-sealed class Char(to: () -> Set<Char>) : State(to)
+sealed class Char(to: () -> Set<Char>) : State<Char>(to)
 
 data object A : Char(to = { setOf(B) })
 data object B : Char(to = { setOf(B, C, D) })

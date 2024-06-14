@@ -1,6 +1,6 @@
 package app.cash.kfsm
 
-open class Transition<V: Value<V, S>, S : State>(val from: States<S>, val to: S) {
+open class Transition<V: Value<V, S>, S : State<S>>(val from: States<S>, val to: S) {
 
   init {
     from.set.filterNot { it.canDirectlyTransitionTo(to) }.let {

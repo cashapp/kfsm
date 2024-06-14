@@ -55,21 +55,21 @@ class StateMachineTest : StringSpec({
   }
 })
 
-sealed class ValidState(to: () -> Set<ValidState>) : State(to)
+sealed class ValidState(to: () -> Set<ValidState>) : State<ValidState>(to)
 data object Valid1 : ValidState({ setOf(Valid2, Valid3) })
 data object Valid2 : ValidState({ setOf(Valid3) })
 data object Valid3 : ValidState({ setOf(Valid4, Valid5) })
 data object Valid4 : ValidState({ setOf() })
 data object Valid5 : ValidState({ setOf() })
 
-sealed class UniCycleState(to: () -> Set<UniCycleState>) : State(to)
+sealed class UniCycleState(to: () -> Set<UniCycleState>) : State<UniCycleState>(to)
 data object UniCycle1 : UniCycleState({ setOf(UniCycle1) })
 
-sealed class BiCycleState(to: () -> Set<BiCycleState>) : State(to)
+sealed class BiCycleState(to: () -> Set<BiCycleState>) : State<BiCycleState>(to)
 data object BiCycle1 : BiCycleState({ setOf(BiCycle2) })
 data object BiCycle2 : BiCycleState({ setOf(BiCycle1) })
 
-sealed class TriCycleState(to: () -> Set<TriCycleState>) : State(to)
+sealed class TriCycleState(to: () -> Set<TriCycleState>) : State<TriCycleState>(to)
 data object TriCycle1 : TriCycleState({ setOf(TriCycle2) })
 data object TriCycle2 : TriCycleState({ setOf(TriCycle3) })
 data object TriCycle3 : TriCycleState({ setOf(TriCycle1) })
