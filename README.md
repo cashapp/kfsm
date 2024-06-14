@@ -27,7 +27,7 @@ The states are a collection of related classes that define a distinct state that
 which states are valid next states.
 
 ```kotlin
-sealed class Color(to: () -> Set<Color>) : app.cash.kfsm.State(to)
+sealed class Color(to: () -> Set<Color>) : app.cash.kfsm.State<Color>(to)
 data object Green : Color({ setOf(Amber) })
 data object Amber : Color({ setOf(Red) })
 data object Red : Color({ setOf(Green) })
@@ -122,7 +122,7 @@ val greenLight: Result<Light> = transitioner.transition(redLight, Go)
 
 ```kotlin
 // The state
-sealed class Color(to: () -> Set<Color>) : app.cash.kfsm.State(to)
+sealed class Color(to: () -> Set<Color>) : app.cash.kfsm.State<Color>(to)
 data object Green : Color({ setOf(Amber) })
 data object Amber : Color({ setOf(Red) })
 data object Red : Color({ setOf(Green) })
