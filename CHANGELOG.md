@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.7.0]
+
 ### Breaking
 
 * Added type argument to State to allow for the ability to add customer behaviour to your states. This is a breaking
