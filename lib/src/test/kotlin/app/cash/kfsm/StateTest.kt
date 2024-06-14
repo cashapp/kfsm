@@ -55,4 +55,9 @@ class StateTest : StringSpec({
     E.canEventuallyTransitionTo(E) shouldBe false
   }
 
+  "can define and use custom methods on a state" {
+    A.next(2) shouldBe listOf(B, C)
+    E.next(2) shouldBe emptyList()
+  }
+
 })
