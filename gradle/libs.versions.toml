@@ -1,28 +1,22 @@
 [versions]
-arrow = "1.2.1"
 junit = "5.10.1"
 kotest = "5.8.0"
-kotestExtensions = "1.4.0"
 # @pin
 kotlin = "1.9.0"
 kotlinBinaryCompatibilityPlugin = "0.13.2"
 kotlinLogging = "3.0.5"
 mavenPublishGradlePlugin = "0.27.0"
-quiver = "0.5.0"
 slf4j = "2.0.11"
 versionCatalogUpdateGradlePlugin = "0.8.3"
 versionsGradlePlugin = "0.50.0"
 
 [libraries]
-arrowCore = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 junitApi = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junitEngine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
 kotestAssertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest" }
-kotestAssertionsArrow = { module = "io.kotest.extensions:kotest-assertions-arrow", version.ref = "kotestExtensions" }
 kotestJunitRunnerJvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest" }
 kotestProperty = { module = "io.kotest:kotest-property", version.ref = "kotest" }
 kotlinLoggingJvm = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlinLogging" }
-quiver = { module = "app.cash.quiver:lib", version.ref = "quiver" }
 slf4jSimple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 [bundles]
